@@ -14,8 +14,8 @@ class Database
         if (self::$instance === null) {
             $host = getenv('DB_HOST') ?: 'postgresql';
             $port = getenv('DB_PORT') ?: '5432';
-            $dbname = getenv('DB_NAME') ?: 'press_release_db';
-            $user = getenv('DB_USER') ?: 'press_release';
+            $dbname = getenv('DB_DATABASE') ?: getenv('DB_NAME') ?: 'press_release_db';
+            $user = getenv('DB_USERNAME') ?: getenv('DB_USER') ?: 'press_release';
             $password = getenv('DB_PASSWORD') ?: 'press_release';
 
             $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
