@@ -155,7 +155,8 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
         return;
       }
       const { url } = await res.json();
-      editor.chain().focus().setImage({ src: url }).run();
+      const alt = window.prompt('画像の代替テキストを入力してください', '') ?? '';
+      editor.chain().focus().setImage({ src: url, alt }).run();
     } catch {
       alert('画像のアップロードに失敗しました');
     }
