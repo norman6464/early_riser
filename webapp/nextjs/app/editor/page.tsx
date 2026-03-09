@@ -191,6 +191,8 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             </button>
             <button onClick={handleLink} className={styles.linkButton}>
               🔗
+
+              
             </button>
           </div>
           <EditorContent editor={editor} />
