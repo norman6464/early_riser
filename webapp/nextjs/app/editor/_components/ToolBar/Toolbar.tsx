@@ -59,6 +59,12 @@ export default function Toolbar({ editor }: ToolbarProps) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
+    const addImage = () => {
+    const url = prompt('画像URLを入力してください');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  }
 
   const buttonClass = (name: string) =>
     `${styles.toolbarButton} ${editor.isActive(name) ? styles.toolbarButtonActive : ''}`;
@@ -92,6 +98,9 @@ export default function Toolbar({ editor }: ToolbarProps) {
       />
       <button onClick={handleLink} className={buttonClass('link')}>
         🔗
+      </button>
+      <button onClick={addImage} className={buttonClass('image')}>
+        🖼️
       </button>
     </div>
   );
