@@ -35,8 +35,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
     } catch {
       alert('画像のアップロードに失敗しました');
     }
+    finally {
+      e.target.value = '';
+     }
 
-    e.target.value = '';
+    } 
   };
 
   const handleBold = () => {
