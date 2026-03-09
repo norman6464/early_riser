@@ -155,6 +155,26 @@ class SavePressReleaseController
         $title = $data['title'];
         $content = $data['content'];
 
+        // タイトルと本文の長さを検証（マルチバイト対応）
+        $titleLen = mb_strlen($title);
+        $contentLen = mb_strlen(json_decode($content, true)['content'][0]['content'][0]['text']);
+        
+        if ($titleLen > 100 || $contentLen > 500) {
+            $errors = [];
+            if ($titleLen > 100) {
+                $errors[] = 'title must be at most 100 characters';
+            }
+            if ($contentLen > 500) {
+                $errors[] = 'content must be at most 500 characters';
+            }
+
+            $payload = json_encode(['code' => 'TOO_LONG', 'message' => implode('; ', $errors)]);
+            $response->getBody()->write($payload);
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+
         return [
             'id' => $id,
             'title' => $title,

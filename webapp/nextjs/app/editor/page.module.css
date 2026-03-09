@@ -19,6 +19,12 @@
   font-size: 1.5rem;
 }
 
+.headerButtons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .saveButton {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
@@ -58,53 +64,6 @@
   margin-bottom: 1.5rem;
 }
 
-.toolbar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.boldButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.boldButton:hover {
-  background-color: #e9ecef;
-}
-
-.italicButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.italicButton:hover {
-  background-color: #e9ecef;
-}
-
-.underlineButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.underlineButton:hover {
-  background-color: #e9ecef;
-}
-
 .titleInput {
   width: 100%;
   padding: 0.75rem;
@@ -119,34 +78,6 @@
 .titleInput:focus {
   border-color: #007bff;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.toolbar {
-  display: flex;
-  gap: 0.5rem;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.toolbarButton {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #495057;
-}
-
-.toolbarButton:hover {
-  background-color: #e9ecef;
-}
-
-.toolbarButtonActive {
-  background-color: #0056b3;
-  color: white;
-  border-color: #0056b3;
 }
 
 .editorWrapper :global(.tiptap) {
@@ -191,37 +122,9 @@
   color: #96696e;
 }
 
-.toolbar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
 
-
-.linkButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.linkButton:hover {
-  background-color: #e9ecef;
-}
-
-.imageButton {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.imageButton:hover {
-  background-color: #e9ecef;
+.charCount {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6c757d;
 }
