@@ -13,7 +13,7 @@ use Psr\Http\Message\ServerRequestInterface;
 $app = AppFactory::create();
 
 // Handle OPTIONS preflight requests before routing
-$app->options('/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
+$app->options('/{routes:.*}', function (ServerRequestInterface $request, ResponseInterface $response) {
     return $response;
 });
 
@@ -43,6 +43,12 @@ $app->post('/api/images/presigned-url', ImageUploadController::class . '::handle
 $app->get('/api/templates', TemplateController::class . '::list');
 $app->post('/api/templates', TemplateController::class . '::save');
 $app->delete('/api/templates/{id}', TemplateController::class . '::delete');
+
+// Catch-all for undefined routes (return 404 instead of 405)
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
+    $response->getBody()->write(json_encode(['code' => 'NOT_FOUND', 'message' => 'Route not found']));
+    return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+});
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
