@@ -7,6 +7,9 @@ import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline'
@@ -85,7 +88,7 @@ interface EditorProps {
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text, Bold, Italic, Underline],
+    extensions: [Document, Heading, Paragraph, Text, BulletList, OrderedList, ListItem, Bold, Italic, Underline],
     content: initialContent,
     immediatelyRender: false
   });
@@ -145,6 +148,22 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             </button>
             <button onClick={handleUnderline} className={styles.underlineButton}>
               <u>U</u>
+            </button>
+            <button
+              type="button"
+              onClick={() => editor?.commands.toggleBulletList()}
+              className={`${styles.toolbarButton} ${editor?.isActive('bulletList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('bulletList') ?? false}
+            >
+              箇条書き
+            </button>
+            <button
+              type="button"
+              onClick={() => editor?.commands.toggleOrderedList()}
+              className={`${styles.toolbarButton} ${editor?.isActive('orderedList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('orderedList') ?? false}
+            >
+              番号付きリスト
             </button>
           </div>
           <EditorContent editor={editor} />
