@@ -11,6 +11,14 @@ export interface ErrorResponse {
   message: string;
 }
 
+export interface Template {
+  id: number;
+  name: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
+
 export interface TipTapContent {
   type: string;
   content?: TipTapNode[];
