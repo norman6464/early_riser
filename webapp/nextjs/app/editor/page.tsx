@@ -18,6 +18,7 @@ import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
 import Toolbar from './_components/ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
+import TemplateModal from './_components/TemplateModal/TemplateModal';
 import type { HtmlImportData } from './_components/HtmlImportModal/HtmlImportModal';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
@@ -92,6 +93,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const titleCount = title.length;
   const [bodyCount, setBodyCount] = useState(0);
+  const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
   const editor = useEditor({
     extensions: [
       Document,
@@ -201,6 +203,18 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     return () => clearInterval(interval);
   }, [editor, title, mutate, isPending]);
 
+  const handleTemplateLoad = (loadedTitle: string, content: string) => {
+    setTitle(loadedTitle);
+    if (editor) {
+      try {
+        const parsed = JSON.parse(content);
+        editor.chain().focus().setContent(parsed).run();
+      } catch {
+        editor.chain().focus().setContent(content).run();
+      }
+    }
+  };
+
   const handleHtmlImport = (data: HtmlImportData) => {
     if (data.title) {
       setTitle(data.title);
@@ -241,6 +255,12 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
+          <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
+            テンプレートから作成
+          </button>
+          <button onClick={() => setTemplateModal('save')} className={styles.templateButton}>
+            テンプレート保存
+          </button>
           <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
             {isPending ? '保存中...' : '保存'}
           </button>
@@ -264,6 +284,16 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
       </main>
+
+      {templateModal && (
+        <TemplateModal
+          mode={templateModal}
+          currentTitle={title}
+          currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
+          onLoad={handleTemplateLoad}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
     </div>
   );
 }
