@@ -9,13 +9,9 @@ use App\TemplateController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Slim\Psr7\Response;
 
 $app = AppFactory::create();
-
-// Handle OPTIONS preflight requests before routing
-$app->options('/{routes:.*}', function (ServerRequestInterface $request, ResponseInterface $response) {
-    return $response;
-});
 
 // Health check for ALB
 $app->get('/', function (ServerRequestInterface $request, ResponseInterface $response) {
@@ -44,8 +40,18 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (S
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
-// CORS middleware - must be added AFTER error middleware so it runs outermost (Slim LIFO order)
+// CORS + OPTIONS middleware - outermost (Slim LIFO: last added = first executed)
+// Handles OPTIONS preflight directly without routing, and adds CORS headers to all responses
 $app->add(function (ServerRequestInterface $request, $handler) {
+    if ($request->getMethod() === 'OPTIONS') {
+        $response = new Response();
+        return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept')
+            ->withStatus(200);
+    }
+
     $response = $handler->handle($request);
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
