@@ -34,12 +34,9 @@ export default function Toolbar({ editor }: ToolbarProps) {
       editor.chain().focus().setImage({ src: url }).run();
     } catch {
       alert('画像のアップロードに失敗しました');
-    }
-    finally {
+    } finally {
       e.target.value = '';
-     }
-
-    } 
+    }
   };
 
   const handleBold = () => {
