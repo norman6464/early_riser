@@ -1,12 +1,8 @@
 name: Front Test
 
 on:
-  push:
-    branches: [main, dev]
-    paths:
-      - "webapp/nextjs/**"
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     types:
       - opened
       - synchronize
