@@ -2,12 +2,19 @@
 
 import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
 import Image from '@tiptap/extension-image';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Underline from '@tiptap/extension-underline'
+import ImageNodeView from './components/ImageNodeView';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -87,12 +94,35 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
-    extensions: [Document, Heading, Image, Paragraph, Text],
+    extensions: [
+      Document, Heading,
+      Image.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(ImageNodeView);
+        },
+      }),
+      Paragraph, Text, BulletList, OrderedList, ListItem, Bold, Italic, Underline,
+    ],
     content: initialContent,
     immediatelyRender: false
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
+
+  const handleBold = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleBold().run();
+  };
+
+  const handleItalic = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleItalic().run();
+  };
+
+  const handleUnderline = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleUnderline().run();
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -132,16 +162,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
-          <button onClick={() => fileInputRef.current?.click()} className={styles.imageButton}>
-            画像追加
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            onChange={handleImageUpload}
-            hidden
-          />
           <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
             {isPending ? '保存中...' : '保存'}
           </button>
@@ -158,6 +178,44 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               placeholder="タイトルを入力してください"
               className={styles.titleInput}
             />
+          </div>
+          <div className={styles.toolbar}>
+            <button onClick={handleBold} className={styles.boldButton}>
+              <strong>B</strong>
+            </button>
+            <button onClick={handleItalic} className={styles.italicButton}>
+              <em>I</em>
+            </button>
+            <button onClick={handleUnderline} className={styles.underlineButton}>
+              <u>U</u>
+            </button>
+            <button
+              type="button"
+              onClick={() => editor?.commands.toggleBulletList()}
+              className={`${styles.toolbarButton} ${editor?.isActive('bulletList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('bulletList') ?? false}
+            >
+              箇条書き
+            </button>
+            <button
+              type="button"
+              onClick={() => editor?.commands.toggleOrderedList()}
+              className={`${styles.toolbarButton} ${editor?.isActive('orderedList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('orderedList') ?? false}
+            >
+              番号付きリスト
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton}>
+            画像追加
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleImageUpload}
+            hidden
+          />
+
           </div>
           <EditorContent editor={editor} />
         </div>
