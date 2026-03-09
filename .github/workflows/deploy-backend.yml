@@ -1,0 +1,95 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "webapp/php/**"
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  TASK_FAMILY: early-riser-api
+  CONTAINER_NAME: laravel
+  ALB_DNS: ${{ vars.ALB_DNS }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/early-riser-github-actions-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, Push Docker Image
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd webapp/php
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download Current Task Definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition $TASK_FAMILY \
+            --query taskDefinition \
+            > task-definition.json
+
+      - name: Inject Environment Variables into Task Definition
+        run: |
+          jq '.containerDefinitions[0].environment = [
+            {"name": "APP_ENV", "value": "${{ vars.APP_ENV }}"},
+            {"name": "APP_KEY", "value": "${{ secrets.APP_KEY }}"},
+            {"name": "DB_CONNECTION", "value": "${{ vars.DB_CONNECTION }}"},
+            {"name": "DB_HOST", "value": "${{ secrets.DB_HOST }}"},
+            {"name": "DB_PORT", "value": "${{ vars.DB_PORT }}"},
+            {"name": "DB_DATABASE", "value": "${{ vars.DB_DATABASE }}"},
+            {"name": "DB_USERNAME", "value": "${{ secrets.DB_USERNAME }}"},
+            {"name": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD }}"},
+            {"name": "AWS_BUCKET_IMAGES", "value": "${{ vars.AWS_BUCKET_IMAGES }}"},
+            {"name": "AWS_BUCKET_IMAGES_URL", "value": "${{ vars.AWS_BUCKET_IMAGES_URL }}"}
+          ]' task-definition.json > task-definition-updated.json
+          mv task-definition-updated.json task-definition.json
+
+      - name: Update Task Definition with New Image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Summary
+        run: |
+          echo "### Backend Deployed :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ steps.build-image.outputs.image }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**API:** http://${{ env.ALB_DNS }}" >> $GITHUB_STEP_SUMMARY
