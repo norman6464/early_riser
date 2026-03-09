@@ -157,31 +157,44 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
-  const lastSavedRef = useRef<string>('');
+  const lastSavedRef = useRef<string>(
+    JSON.stringify({
+      title: initialTitle,
+      content: JSON.stringify(initialContent),
+    }),
+  );
 
   // 5秒ごとの自動保存（変更がある場合のみ）
   useEffect(() => {
     if (!editor) return;
 
     const interval = setInterval(() => {
+      if (isPending) return;
+
       const currentContent = JSON.stringify(editor.getJSON());
       const currentData = JSON.stringify({ title, content: currentContent });
 
       if (currentData !== lastSavedRef.current) {
-        lastSavedRef.current = currentData;
-        mutate({ title, content: currentContent });
+        mutate({ title, content: currentContent }, {
+          onSuccess: () => {
+            lastSavedRef.current = currentData;
+          },
+        });
       }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [editor, title, mutate]);
+  }, [editor, title, mutate, isPending]);
 
   const handleSave = () => {
     if (!editor) return;
 
-    mutate({
-      title,
-      content: JSON.stringify(editor.getJSON()),
+    const content = JSON.stringify(editor.getJSON());
+    const currentData = JSON.stringify({ title, content });
+    mutate({ title, content }, {
+      onSuccess: () => {
+        lastSavedRef.current = currentData;
+      },
     });
   };
 
