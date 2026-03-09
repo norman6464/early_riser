@@ -170,6 +170,13 @@
   line-height: 1.6;
 }
 
+.editorWrapper :global(.tiptap) img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;    
+}
+
 .loading,
 .error {
   display: flex;
@@ -203,5 +210,18 @@
 }
 
 .linkButton:hover {
+  background-color: #e9ecef;
+}
+
+.imageButton {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.imageButton:hover {
   background-color: #e9ecef;
 }

@@ -16,6 +16,7 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
+import Image from '@tiptap/extension-image';
 
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
@@ -105,31 +106,29 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       ListItem,
       Bold,
       Italic,
+      Image,
     ],
     content: initialContent,
     immediatelyRender: false
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
-
+  if (!editor) {
+      return null; 
+    }
   const handleBold = () => {
-    if (!editor) return;
     editor.chain().focus().toggleBold().run();
   };
 
   const handleItalic = () => {
-    if (!editor) return;
     editor.chain().focus().toggleItalic().run();
   };
 
   const handleUnderline = () => {
-    if (!editor) return;
     editor.chain().focus().toggleUnderline().run();
   };
 
   const handleSave = () => {
-    if (!editor) return;
-
     mutate({
       title,
       content: JSON.stringify(editor.getJSON()),
@@ -137,12 +136,19 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   };
 
   const handleLink = () => {
-    if (!editor) return;
     const url = prompt('リンクURLを入力してください');
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
+
+  const addImage = () => {
+    const url = prompt('画像URLを入力してください');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  }
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -191,6 +197,9 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             </button>
             <button onClick={handleLink} className={styles.linkButton}>
               🔗
+            </button>
+            <button onClick={addImage} className={styles.imageButton}>
+              🖼️
             </button>
           </div>
           <EditorContent editor={editor} />
