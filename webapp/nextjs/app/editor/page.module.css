@@ -19,6 +19,26 @@
   font-size: 1.5rem;
 }
 
+.headerButtons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.imageButton {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.imageButton:hover {
+  background-color: #218838;
+}
+
 .saveButton {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
@@ -77,6 +97,13 @@
 .tiptap {
   outline: none;
   min-height: 400px;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 1em 0;
 }
 
 .tiptap p {
