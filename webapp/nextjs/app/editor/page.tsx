@@ -25,6 +25,10 @@ import styles from './page.module.css';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
+const TITLE_MAX_LENGTH = 100;
+const BODY_MAX_LENGTH = 500;
+
+const countWithoutLineBreaks = (text: string) => text.replace(/[\r\n]/g, '').length;
 
 function usePressReleaseQuery() {
   return useQuery({
@@ -90,8 +94,15 @@ interface EditorProps {
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const titleCount = title.length;
+  const titleCount = countWithoutLineBreaks(title);
   const [bodyCount, setBodyCount] = useState(0);
+  const isTitleTooLong = titleCount > TITLE_MAX_LENGTH;
+  const isBodyTooLong = bodyCount > BODY_MAX_LENGTH;
+  const validationError = isTitleTooLong
+    ? `タイトルは${TITLE_MAX_LENGTH}文字以内で入力してください。`
+    : isBodyTooLong
+      ? `本文は${BODY_MAX_LENGTH}文字以内で入力してください。`
+      : null;
   const editor = useEditor({
     extensions: [
       Document,
@@ -183,6 +194,24 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   useEffect(() => {
     if (!editor) return;
 
+    const currentTitleCount = countWithoutLineBreaks(title);
+    const currentBodyCount = countWithoutLineBreaks(editor.getText());
+
+    if (currentTitleCount > TITLE_MAX_LENGTH) {
+      alert(`タイトルは${TITLE_MAX_LENGTH}文字以内で入力してください。`);
+      return;
+    }
+
+    if (currentBodyCount > BODY_MAX_LENGTH) {
+      alert(`本文は${BODY_MAX_LENGTH}文字以内で入力してください。`);
+      return;
+    }
+
+    mutate({
+      title,
+      content: JSON.stringify(editor.getJSON()),
+    });
+  };
     const interval = setInterval(() => {
       if (isPending) return;
 
@@ -224,7 +253,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   useEffect(() => {
     if (!editor) return;
     const updateCount = () => {
-      setBodyCount(editor.getText().length);
+      setBodyCount(countWithoutLineBreaks(editor.getText()));
     };
 
     updateCount();
@@ -262,6 +291,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
           <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
+          {validationError && <div className={styles.validationError}>{validationError}</div>}
         </div>
       </main>
     </div>
