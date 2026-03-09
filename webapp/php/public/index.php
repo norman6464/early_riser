@@ -26,8 +26,8 @@ $app->add(function (ServerRequestInterface $request, $handler) {
         ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 });
 
-// Health check for ALB
-$app->get('/', function (ServerRequestInterface $request, ResponseInterface $response) {
+// Health check for ALB (GET + OPTIONS)
+$app->map(['GET', 'OPTIONS'], '/', function (ServerRequestInterface $request, ResponseInterface $response) {
     $response->getBody()->write(json_encode(['status' => 'ok']));
     return $response->withHeader('Content-Type', 'application/json');
 });
