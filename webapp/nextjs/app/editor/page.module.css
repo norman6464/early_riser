@@ -205,3 +205,9 @@
 .linkButton:hover {
   background-color: #e9ecef;
 }
+
+.charCount {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+}

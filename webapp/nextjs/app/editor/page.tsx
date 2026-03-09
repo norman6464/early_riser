@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
@@ -88,6 +88,8 @@ interface EditorProps {
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
+  const titleCount = title.length;
+  const [bodyCount, setBodyCount] = useState(0);
   const editor = useEditor({
     extensions: [
       Document,
@@ -143,6 +145,22 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateCount = () => {
+      setBodyCount(editor.getText().length);
+    };
+
+    updateCount();
+    editor.on('update', updateCount);
+
+    return () => {
+      editor.off('update', updateCount);
+    };
+  }, [editor]);
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -162,6 +180,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               placeholder="タイトルを入力してください"
               className={styles.titleInput}
             />
+            <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
           <div className={styles.toolbar}>
             <button onClick={handleBold} className={styles.boldButton}>
@@ -194,6 +213,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             </button>
           </div>
           <EditorContent editor={editor} />
+          <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
       </main>
     </div>
