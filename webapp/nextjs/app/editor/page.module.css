@@ -101,6 +101,13 @@
   line-height: 1.6;
 }
 
+.editorWrapper :global(.tiptap) img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  display: block;    
+}
+
 .loading,
 .error {
   display: flex;

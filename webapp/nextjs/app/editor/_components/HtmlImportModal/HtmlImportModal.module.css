@@ -1,0 +1,152 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  width: 700px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem;
+}
+
+.closeButton:hover {
+  color: #333;
+}
+
+.fileArea {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fileButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fileButton:hover {
+  background: #e9ecef;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.parsedSection {
+  margin-bottom: 0.75rem;
+}
+
+.parsedTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.preview {
+  margin-top: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.previewLabel {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0 0 0.5rem 0;
+}
+
+.previewContent {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.previewContent img {
+  max-width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.cancelButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background: #e9ecef;
+}
+
+.importButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #0056b3;
+  color: white;
+  border: 1px solid #0056b3;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.importButton:hover {
+  background: #004094;
+}
+
+.importButton:disabled {
+  background: #6c9bd2;
+  border-color: #6c9bd2;
+  cursor: not-allowed;
+}
