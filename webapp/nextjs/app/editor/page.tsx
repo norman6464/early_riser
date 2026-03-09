@@ -7,12 +7,13 @@ import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
-import Underline from '@tiptap/extension-underline'
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -88,7 +89,23 @@ interface EditorProps {
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text, BulletList, OrderedList, ListItem, Bold, Italic, Underline],
+    extensions: [
+      Document,
+      Heading,
+      Paragraph,
+      Text,
+      Link.configure({
+        HTMLAttributes: {
+          style: 'color: blue; text-decoration: underline; text-decoration-color: blue;',
+        },
+      }),
+      Underline,
+      BulletList,
+      OrderedList,
+      ListItem,
+      Bold,
+      Italic,
+    ],
     content: initialContent,
     immediatelyRender: false
   });
@@ -119,6 +136,13 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
+  const handleLink = () => {
+    if (!editor) return;
+    const url = prompt('リンクURLを入力してください');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -164,6 +188,9 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               aria-pressed={editor?.isActive('orderedList') ?? false}
             >
               番号付きリスト
+            </button>
+            <button onClick={handleLink} className={styles.linkButton}>
+              🔗
             </button>
           </div>
           <EditorContent editor={editor} />
