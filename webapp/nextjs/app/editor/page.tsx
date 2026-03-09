@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
@@ -39,8 +39,6 @@ function usePressReleaseQuery() {
 }
 
 function useSavePressReleaseMutation() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
       const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`, {
@@ -54,9 +52,6 @@ function useSavePressReleaseMutation() {
         throw new Error('保存に失敗しました');
       }
       return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: Error) => {
       alert(`エラー: ${error.message}`);
@@ -162,6 +157,24 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
+  const lastSavedRef = useRef<string>('');
+
+  // 5秒ごとの自動保存（変更がある場合のみ）
+  useEffect(() => {
+    if (!editor) return;
+
+    const interval = setInterval(() => {
+      const currentContent = JSON.stringify(editor.getJSON());
+      const currentData = JSON.stringify({ title, content: currentContent });
+
+      if (currentData !== lastSavedRef.current) {
+        lastSavedRef.current = currentData;
+        mutate({ title, content: currentContent });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [editor, title, mutate]);
 
   const handleSave = () => {
     if (!editor) return;
