@@ -2,10 +2,8 @@
 
 import { useRef } from 'react';
 import type { Editor } from '@tiptap/react';
+import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import styles from './Toolbar.module.css';
-
-// TODO: PHP APIに置き換える際はこのURLを変更する
-const UPLOAD_API_URL = '/api/upload';
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -20,18 +18,10 @@ export default function Toolbar({ editor }: ToolbarProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || '画像のアップロードに失敗しました');
-        return;
-      }
-      const { url } = await res.json();
-      editor.chain().focus().setImage({ src: url }).run();
+      const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
+      await uploadToS3(uploadUrl, file);
+      editor.chain().focus().setImage({ src: imageUrl }).run();
     } catch {
       alert('画像のアップロードに失敗しました');
     } finally {

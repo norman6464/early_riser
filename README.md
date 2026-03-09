@@ -15,7 +15,7 @@
 |----------|------|------|
 | GET | `/api/press-releases/{id}` | プレスリリース取得 |
 | POST | `/api/press-releases/{id}` | プレスリリース保存 |
-| POST | `/api/upload` | 画像アップロード |
+| POST | `/api/images/presigned-url` | 画像アップロード用プリサインURL取得 |
 | GET | `/` | ヘルスチェック |
 
 ### フロントエンドからの fetch 例
@@ -31,6 +31,27 @@ await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/a
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ title: "タイトル", content: "コンテンツJSON" }),
 });
+```
+
+### 画像アップロード（S3プリサインURL）
+
+```typescript
+// 1. プリサインURLを取得
+const res = await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/api/images/presigned-url", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ contentType: "image/png", fileName: "photo.png" }),
+});
+const { uploadUrl, imageUrl } = await res.json();
+
+// 2. S3に直接アップロード
+await fetch(uploadUrl, {
+  method: "PUT",
+  headers: { "Content-Type": "image/png" },
+  body: file, // Fileオブジェクト
+});
+
+// 3. imageUrl をエディタに挿入
 ```
 
 ## アーキテクチャ
