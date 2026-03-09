@@ -18,18 +18,33 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
   if (!editor) return null;
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    try {
-      const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
-      await uploadToS3(uploadUrl, file);
+    const uploadPromises = Array.from(files).map(async (file) => {
+      try {
+        const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
+        await uploadToS3(uploadUrl, file);
+        return imageUrl;
+      } catch (error) {
+        console.error(`画像 "${file.name}" のアップロードに失敗しました:`, error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const successfulUploads = results.filter((url): url is string => url !== null);
+
+    successfulUploads.forEach((imageUrl) => {
       editor.chain().focus().setImage({ src: imageUrl }).run();
-    } catch {
-      alert('画像のアップロードに失敗しました');
-    } finally {
-      e.target.value = '';
+    });
+
+    if (successfulUploads.length < files.length) {
+      const failedCount = files.length - successfulUploads.length;
+      alert(`${failedCount} 枚の画像のアップロードに失敗しました。`);
     }
+
+    e.target.value = '';
   };
 
   const handleBold = () => {
@@ -101,6 +116,7 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/gif,image/webp"
+          multiple
           onChange={handleImageUpload}
           hidden
         />
