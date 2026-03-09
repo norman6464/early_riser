@@ -14,7 +14,7 @@ import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline'
-import ImageNodeView from './components/ImageNodeView';
+import ImageNodeView from './_components/ImageNodeView';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
