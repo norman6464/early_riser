@@ -36,4 +36,7 @@ $app->post('/api/press-releases/{id}', SavePressReleaseController::class . '::ha
 $app->get('/press-releases/{id}', GetPressReleaseController::class . '::handle');
 $app->post('/press-releases/{id}', SavePressReleaseController::class . '::handle');
 
+$app->addRoutingMiddleware();
+$app->addErrorMiddleware(true, true, true);
+
 $app->run();
