@@ -220,15 +220,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     };
   }, [editor]);
 
-  if (!editor) return null;
-  
-  const handleSave = () => {
-    mutate({
-      title,
-      content: JSON.stringify(editor.getJSON()),
-    });
-  };
-
   
   return (
     <div className={styles.container}>
