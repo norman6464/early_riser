@@ -65,7 +65,7 @@ function useSavePressReleaseMutation() {
       return response.json();
     },
     onError: (error: Error) => {
-      alert(`エラー: ${error.message}`);
+      console.error('保存エラー:', error.message);
     },
   });
 }
@@ -196,38 +196,55 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     titleRef.current = title;
   }, [title]);
 
-  // 5秒ごとの自動保存（変更がある場合のみ）
-  useEffect(() => {
-    if (!editor) return;
-    const interval = setInterval(() => {
-      
-    
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMutatingRef = useRef(false);
+
+  // 変更があったら2秒後に自動保存（デバウンス）
+  const scheduleSave = () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+    saveTimerRef.current = setTimeout(() => {
+      if (!editor || isMutatingRef.current) return;
+
       const currentTitle = titleRef.current;
       const currentContent = JSON.stringify(editor.getJSON());
-
-    // 文字数チェック：オーバーしている場合は保存をスキップ（アラートは出さずに静かに止める）
       const currentTitleCount = countWithoutLineBreaks(currentTitle);
       const currentBodyCount = countWithoutLineBreaks(editor.getText());
 
-      if (currentTitleCount === 0 || currentBodyCount === 0) {
-        return;
-      }
+      if (currentTitleCount === 0 || currentBodyCount === 0) return;
+      if (currentTitleCount > TITLE_MAX_LENGTH || currentBodyCount > BODY_MAX_LENGTH) return;
 
-      if (currentTitleCount > TITLE_MAX_LENGTH || currentBodyCount > BODY_MAX_LENGTH) {
-        return;
-      }
       const currentData = JSON.stringify({ title: currentTitle, content: currentContent });
-
       if (currentData !== lastSavedRef.current) {
+        isMutatingRef.current = true;
         mutate({ title: currentTitle, content: currentContent }, {
           onSuccess: () => {
             lastSavedRef.current = currentData;
-          }
-        })
+          },
+          onSettled: () => {
+            isMutatingRef.current = false;
+          },
+        });
       }
-    }, 5000);
-    return () => clearInterval(interval);
+    }, 2000);
+  };
+
+  // エディター内容変更時に保存をスケジュール
+  useEffect(() => {
+    if (!editor) return;
+    const onUpdate = () => scheduleSave();
+    editor.on('update', onUpdate);
+    return () => {
+      editor.off('update', onUpdate);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, [editor, mutate]);
+
+  // タイトル変更時に保存をスケジュール
+  useEffect(() => {
+    scheduleSave();
+  }, [title]);
 
   const handleTemplateLoad = (loadedTitle: string, content: string) => {
     setTitle(loadedTitle);
