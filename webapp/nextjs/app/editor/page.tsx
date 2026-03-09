@@ -19,6 +19,7 @@ import ImageNodeView from './_components/ImageNodeView';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
 
@@ -26,7 +27,7 @@ function usePressReleaseQuery() {
   return useQuery({
     queryKey,
     queryFn: async (): Promise<PressRelease> => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`);
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`);
       if (!response.ok) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
@@ -40,7 +41,7 @@ function useSavePressReleaseMutation() {
 
   return useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`, {
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,8 +89,7 @@ interface EditorProps {
   initialContent: string;
 }
 
-// TODO: PHP APIに置き換える際はこのURLを変更する
-const UPLOAD_API_URL = '/api/upload';
+const UPLOAD_API_URL = `${API_URL}/api/upload`;
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
