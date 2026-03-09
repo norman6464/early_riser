@@ -6,6 +6,7 @@ import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import HtmlImportModal, { type HtmlImportData } from '../HtmlImportModal/HtmlImportModal';
 import styles from './Toolbar.module.css';
 
+
 interface ToolbarProps {
   editor: Editor | null;
   onHtmlImport: (data: HtmlImportData) => void;
@@ -84,6 +85,35 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     }
   }
 
+  const handleLinkCard = async () => {
+    const url = prompt('リンクカードのURLを入力してください');
+    if (!url) return;
+
+    try {
+      const response = await fetch(`/api/ogp?url=${encodeURIComponent(url)}`);
+      if (!response.ok) {
+        alert('OGP情報の取得に失敗しました。');
+        return;
+      }
+      const ogpData = await response.json();
+      editor.chain().focus().insertContent([
+        {
+          type: 'linkCard',
+          attrs: {
+            url: ogpData.url,
+            title: ogpData.title || '',
+            description: ogpData.description || '',
+            image: ogpData.image || '',
+          },
+        },
+        { type: 'paragraph' },
+      ]).run();
+    } catch (error) {
+      console.error('リンクカードの挿入に失敗しました:', error);
+      alert('リンクカードの挿入に失敗しました。');
+    }
+  };
+
   const handleHtmlImport = (data: HtmlImportData) => {
     onHtmlImport(data);
   };
@@ -125,6 +155,9 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
         </button>
         <button onClick={handleLink} className={buttonClass('link')}>
           🔗
+        </button>
+        <button onClick={handleLinkCard} className={styles.toolbarButton}>
+          リンクカード
         </button>
         <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButton}>
           HTMLインポート
