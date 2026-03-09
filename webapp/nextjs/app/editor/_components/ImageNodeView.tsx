@@ -12,6 +12,7 @@ export default function ImageNodeView({ node, deleteNode }: NodeViewProps) {
         className={styles.imageDeleteButton}
         onClick={deleteNode}
         contentEditable={false}
+        aria-label="画像を削除"
       >
         &times;
       </button>

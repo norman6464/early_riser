@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
@@ -16,9 +16,11 @@ import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
+import Toolbar from './_components/ToolBar/Toolbar';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
 
@@ -26,7 +28,7 @@ function usePressReleaseQuery() {
   return useQuery({
     queryKey,
     queryFn: async (): Promise<PressRelease> => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`);
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`);
       if (!response.ok) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
@@ -40,7 +42,7 @@ function useSavePressReleaseMutation() {
 
   return useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`, {
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,18 +90,14 @@ interface EditorProps {
   initialContent: string;
 }
 
-// TODO: PHP APIに置き換える際はこのURLを変更する
-const UPLOAD_API_URL = '/api/upload';
+const UPLOAD_API_URL = `${API_URL}/api/upload`;
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
     extensions: [
-      
       Document,
       Heading,
-     
       Image.extend({
         addNodeView() {
           return ReactNodeViewRenderer(ImageNodeView);
@@ -121,7 +119,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     ],
     content: initialContent,
     immediatelyRender: false,
-
     editorProps: {
       handleDrop: function (view, event, slice, moved) {
         // エディタ内のテキスト移動ではなく、外部からのファイルドロップか判定
@@ -172,45 +169,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
 
   const { isPending, mutate } = useSavePressReleaseMutation();
 
-  const handleBold = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleBold().run();
-  };
-
-  const handleItalic = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleItalic().run();
-  };
-
-  const handleUnderline = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleUnderline().run();
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editor) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || '画像のアップロードに失敗しました');
-        return;
-      }
-      const { url } = await res.json();
-      editor.chain().focus().setImage({ src: url }).run();
-    } catch {
-      alert('画像のアップロードに失敗しました');
-    }
-
-    // 同じファイルを連続選択できるようにリセット
-    e.target.value = '';
-  };
-
   const handleSave = () => {
     if (!editor) return;
 
@@ -220,13 +178,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
-  const handleLink = () => {
-    if (!editor) return;
-    const url = prompt('リンクURLを入力してください');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  };
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -249,47 +200,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               className={styles.titleInput}
             />
           </div>
-          <div className={styles.toolbar}>
-            <button onClick={handleBold} className={styles.boldButton}>
-              <strong>B</strong>
-            </button>
-            <button onClick={handleItalic} className={styles.italicButton}>
-              <em>I</em>
-            </button>
-            <button onClick={handleUnderline} className={styles.underlineButton}>
-              <u>U</u>
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.commands.toggleBulletList()}
-              className={`${styles.toolbarButton} ${editor?.isActive('bulletList') ? styles.toolbarButtonActive : ''}`}
-              aria-pressed={editor?.isActive('bulletList') ?? false}
-            >
-              箇条書き
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.commands.toggleOrderedList()}
-              className={`${styles.toolbarButton} ${editor?.isActive('orderedList') ? styles.toolbarButtonActive : ''}`}
-              aria-pressed={editor?.isActive('orderedList') ?? false}
-            >
-              番号付きリスト
-            </button>
-            <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton}>
-            画像追加
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            onChange={handleImageUpload}
-            hidden
-          />
-
-            <button onClick={handleLink} className={styles.linkButton}>
-              🔗
-            </button>
-          </div>
+          <Toolbar editor={editor} />
           <EditorContent editor={editor} />
         </div>
       </main>

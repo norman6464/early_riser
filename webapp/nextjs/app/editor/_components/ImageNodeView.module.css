@@ -28,13 +28,22 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s;
 }
 
+.imageContainer:focus-within .imageDeleteButton,
 .imageContainer:hover .imageDeleteButton {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .imageDeleteButton:hover {
   background-color: rgba(220, 53, 69, 0.9);
+}
+.imageDeleteButton:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid white;
+  outline-offset: 2px;
 }
