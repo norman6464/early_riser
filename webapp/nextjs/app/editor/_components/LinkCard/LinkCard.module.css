@@ -57,10 +57,10 @@
   overflow: hidden;
 }
 
-.url {
+.domain {
   font-size: 0.75rem;
   color: #999;
-  margin-top: 6px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

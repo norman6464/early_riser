@@ -11,6 +11,13 @@ export default function LinkCardView({ node, deleteNode }: NodeViewProps) {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  let domain = '';
+  try {
+    domain = new URL(url).hostname;
+  } catch {
+    domain = url;
+  }
+
   return (
     <NodeViewWrapper>
       <div className={styles.card} onClick={handleClick} role="link" tabIndex={0}>
@@ -20,9 +27,9 @@ export default function LinkCardView({ node, deleteNode }: NodeViewProps) {
           </div>
         )}
         <div className={styles.content}>
+          <div className={styles.domain}>{domain}</div>
           {title && <div className={styles.title}>{title}</div>}
           {description && <div className={styles.description}>{description}</div>}
-          <div className={styles.url}>{url}</div>
         </div>
         <button
           className={styles.deleteButton}
