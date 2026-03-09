@@ -4,6 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\GetPressReleaseController;
 use App\SavePressReleaseController;
+use App\ImageUploadController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -35,6 +36,8 @@ $app->get('/api/press-releases/{id}', GetPressReleaseController::class . '::hand
 $app->post('/api/press-releases/{id}', SavePressReleaseController::class . '::handle');
 $app->get('/press-releases/{id}', GetPressReleaseController::class . '::handle');
 $app->post('/press-releases/{id}', SavePressReleaseController::class . '::handle');
+
+$app->post('/api/images/presigned-url', ImageUploadController::class . '::handle');
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);

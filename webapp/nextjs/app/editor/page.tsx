@@ -17,6 +17,7 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
 import Toolbar from './_components/ToolBar/Toolbar';
+import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -90,7 +91,6 @@ interface EditorProps {
   initialContent: string;
 }
 
-const UPLOAD_API_URL = `${API_URL}/api/upload`;
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
@@ -135,22 +135,14 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
             if (!coordinates) return false;
 
-            // 非同期でAPIに画像をアップロードする関数
+            // 非同期でプリサインURLを取得しS3に直接アップロード
             const uploadDroppedImage = async () => {
-              const formData = new FormData();
-              formData.append('file', file);
-
               try {
-                const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
-                if (!res.ok) {
-                  const data = await res.json();
-                  alert(data.error || '画像のアップロードに失敗しました');
-                  return;
-                }
-                const { url } = await res.json();
+                const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
+                await uploadToS3(uploadUrl, file);
 
                 // アップロードが完了したら、ドロップした位置に画像を挿入
-                const node = view.state.schema.nodes.image.create({ src: url });
+                const node = view.state.schema.nodes.image.create({ src: imageUrl });
                 const transaction = view.state.tr.insert(coordinates.pos, node);
                 view.dispatch(transaction);
               } catch {
