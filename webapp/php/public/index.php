@@ -17,15 +17,6 @@ $app->options('/{routes:.*}', function (ServerRequestInterface $request, Respons
     return $response;
 });
 
-// Add CORS middleware
-$app->add(function (ServerRequestInterface $request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
-});
-
 // Health check for ALB (GET + OPTIONS)
 $app->map(['GET', 'OPTIONS'], '/', function (ServerRequestInterface $request, ResponseInterface $response) {
     $response->getBody()->write(json_encode(['status' => 'ok']));
@@ -51,6 +42,15 @@ $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (S
 });
 
 $app->addRoutingMiddleware();
-$app->addErrorMiddleware(true, true, true); // Enable detailed error output
+$app->addErrorMiddleware(true, true, true);
+
+// CORS middleware - must be added AFTER error middleware so it runs outermost (Slim LIFO order)
+$app->add(function (ServerRequestInterface $request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+});
 
 $app->run();
