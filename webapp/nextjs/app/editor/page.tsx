@@ -120,34 +120,49 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     editorProps: {
       handleDrop: function (view, event, slice, moved) {
         // エディタ内のテキスト移動ではなく、外部からのファイルドロップか判定
-        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
-          const file = event.dataTransfer.files[0];
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+          const files = Array.from(event.dataTransfer.files).filter(file => file.type.startsWith('image/'));
 
-          // ドロップされたファイルが画像の場合のみ処理
-          if (file.type.startsWith('image/')) {
+          if (files.length > 0) {
             event.preventDefault();
 
             // ドロップされた位置の座標を取得
             const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
             if (!coordinates) return false;
 
-            // 非同期でプリサインURLを取得しS3に直接アップロード
-            const uploadDroppedImage = async () => {
-              try {
-                const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
-                await uploadToS3(uploadUrl, file);
+            // 非同期で複数画像をアップロード
+            const uploadDroppedImages = async () => {
+              const uploadPromises = files.map(async (file) => {
+                try {
+                  const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
+                  await uploadToS3(uploadUrl, file);
+                  return imageUrl;
+                } catch (error) {
+                  console.error(`画像 "${file.name}" のアップロードに失敗しました:`, error);
+                  return null;
+                }
+              });
 
-                // アップロードが完了したら、ドロップした位置に画像を挿入
+              const results = await Promise.all(uploadPromises);
+              const successfulUploads = results.filter((url): url is string => url !== null);
+
+              // 成功した画像をドロップ位置に挿入
+              let pos = coordinates.pos;
+              successfulUploads.forEach((imageUrl) => {
                 const node = view.state.schema.nodes.image.create({ src: imageUrl });
-                const transaction = view.state.tr.insert(coordinates.pos, node);
+                const transaction = view.state.tr.insert(pos, node);
                 view.dispatch(transaction);
-              } catch {
-                alert('画像のアップロードに失敗しました');
+                pos += node.nodeSize; // 次の画像を挿入する位置を調整
+              });
+
+              if (successfulUploads.length < files.length) {
+                const failedCount = files.length - successfulUploads.length;
+                alert(`${failedCount} 枚の画像のアップロードに失敗しました。`);
               }
             };
 
             // アップロードを実行
-            uploadDroppedImage();
+            uploadDroppedImages();
 
             return true; // Tiptapにイベントを処理したことを伝える
           }
