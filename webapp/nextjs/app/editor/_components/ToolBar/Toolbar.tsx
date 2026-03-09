@@ -62,6 +62,12 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
+    const addImage = () => {
+    const url = prompt('画像URLを入力してください');
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  }
 
   const handleHtmlImport = (data: HtmlImportData) => {
     onHtmlImport(data);
@@ -98,6 +104,9 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
           onChange={handleImageUpload}
           hidden
         />
+        <button onClick={addImage} className={buttonClass('image')}>
+          🖼️
+        </button>
         <button onClick={handleLink} className={buttonClass('link')}>
           🔗
         </button>

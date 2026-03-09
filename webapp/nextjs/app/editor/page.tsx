@@ -156,7 +156,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       },
     },
   });
-
   const { isPending, mutate } = useSavePressReleaseMutation();
   const lastSavedRef = useRef<string>(
     JSON.stringify({
@@ -207,9 +206,6 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       },
     });
   };
-
-
-
   useEffect(() => {
     if (!editor) return;
     const updateCount = () => {
@@ -223,6 +219,16 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       editor.off('update', updateCount);
     };
   }, [editor]);
+
+  if (!editor) return null;
+  
+  const handleSave = () => {
+    mutate({
+      title,
+      content: JSON.stringify(editor.getJSON()),
+    });
+  };
+
   
   return (
     <div className={styles.container}>
