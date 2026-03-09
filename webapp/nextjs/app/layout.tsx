@@ -24,7 +24,7 @@ export default function RootLayout({
 
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>

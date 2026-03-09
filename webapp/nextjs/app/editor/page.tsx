@@ -25,6 +25,14 @@ import styles from './page.module.css';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
+const TITLE_MAX_LENGTH = 100;
+const BODY_MAX_LENGTH = 500;
+
+const countWithoutLineBreaks = (text: string | null | undefined) => {
+  // text が null や undefined（または空文字）の場合は 0 を返す
+  if (!text) return 0;
+  return text.replace(/[\r\n]/g, '').length;
+};
 
 function usePressReleaseQuery() {
   return useQuery({
@@ -179,27 +187,43 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     }),
   );
 
+  const titleRef = useRef(title);
+  useEffect(() => {
+    titleRef.current = title;
+  }, [title]);
+
   // 5秒ごとの自動保存（変更がある場合のみ）
   useEffect(() => {
     if (!editor) return;
-
     const interval = setInterval(() => {
-      if (isPending) return;
-
+      
+    
+      const currentTitle = titleRef.current;
       const currentContent = JSON.stringify(editor.getJSON());
-      const currentData = JSON.stringify({ title, content: currentContent });
+
+    // 文字数チェック：オーバーしている場合は保存をスキップ（アラートは出さずに静かに止める）
+      const currentTitleCount = countWithoutLineBreaks(currentTitle);
+      const currentBodyCount = countWithoutLineBreaks(editor.getText());
+
+      if (currentTitleCount === 0 || currentBodyCount === 0) {
+        return;
+      }
+
+      if (currentTitleCount > TITLE_MAX_LENGTH || currentBodyCount > BODY_MAX_LENGTH) {
+        return;
+      }
+      const currentData = JSON.stringify({ title: currentTitle, content: currentContent });
 
       if (currentData !== lastSavedRef.current) {
-        mutate({ title, content: currentContent }, {
+        mutate({ title: currentTitle, content: currentContent }, {
           onSuccess: () => {
             lastSavedRef.current = currentData;
-          },
-        });
+          }
+        })
       }
     }, 5000);
-
     return () => clearInterval(interval);
-  }, [editor, title, mutate, isPending]);
+  }, [editor, mutate]);
 
   const handleHtmlImport = (data: HtmlImportData) => {
     if (data.title) {
@@ -212,9 +236,29 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
 
   const handleSave = () => {
     if (!editor) return;
+    const currentTitleCount = countWithoutLineBreaks(title);
+    const currentBodyCount = countWithoutLineBreaks(editor.getText());
+    if (currentTitleCount === 0) {
+          alert('タイトルを入力してください。');
+          return;
+        }
 
+    if (currentBodyCount === 0) {
+      alert('本文を入力してください。');
+      return;
+    }
+    if (currentTitleCount > TITLE_MAX_LENGTH) {
+      alert(`タイトルは${TITLE_MAX_LENGTH}文字以内で入力してください。`);
+      return;
+    }
+
+    if (currentBodyCount > BODY_MAX_LENGTH) {
+      alert(`本文は${BODY_MAX_LENGTH}文字以内で入力してください。`);
+      return;
+    }
     const content = JSON.stringify(editor.getJSON());
     const currentData = JSON.stringify({ title, content });
+    
     mutate({ title, content }, {
       onSuccess: () => {
         lastSavedRef.current = currentData;
