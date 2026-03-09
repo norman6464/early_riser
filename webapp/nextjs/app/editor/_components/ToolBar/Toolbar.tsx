@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
+import HtmlImportModal from '../HtmlImportModal/HtmlImportModal';
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
@@ -11,6 +12,7 @@ interface ToolbarProps {
 
 export default function Toolbar({ editor }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showHtmlImport, setShowHtmlImport] = useState(false);
 
   if (!editor) return null;
 
@@ -60,39 +62,54 @@ export default function Toolbar({ editor }: ToolbarProps) {
     }
   };
 
+  const handleHtmlImport = (html: string) => {
+    editor.chain().focus().setContent(html).run();
+  };
+
   const buttonClass = (name: string) =>
     `${styles.toolbarButton} ${editor.isActive(name) ? styles.toolbarButtonActive : ''}`;
 
   return (
-    <div className={styles.toolbar}>
-      <button onClick={handleBold} className={buttonClass('bold')}>
-        <strong>B</strong>
-      </button>
-      <button onClick={handleItalic} className={buttonClass('italic')}>
-        <em>I</em>
-      </button>
-      <button onClick={handleUnderline} className={buttonClass('underline')}>
-        <u>U</u>
-      </button>
-      <button onClick={handleBulletList} className={buttonClass('bulletList')}>
-        箇条書き
-      </button>
-      <button onClick={handleOrderedList} className={buttonClass('orderedList')}>
-        番号付きリスト
-      </button>
-      <button onClick={handleImageClick} className={styles.toolbarButton}>
-        画像追加
-      </button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
-        onChange={handleImageUpload}
-        hidden
-      />
-      <button onClick={handleLink} className={buttonClass('link')}>
-        🔗
-      </button>
-    </div>
+    <>
+      <div className={styles.toolbar}>
+        <button onClick={handleBold} className={buttonClass('bold')}>
+          <strong>B</strong>
+        </button>
+        <button onClick={handleItalic} className={buttonClass('italic')}>
+          <em>I</em>
+        </button>
+        <button onClick={handleUnderline} className={buttonClass('underline')}>
+          <u>U</u>
+        </button>
+        <button onClick={handleBulletList} className={buttonClass('bulletList')}>
+          箇条書き
+        </button>
+        <button onClick={handleOrderedList} className={buttonClass('orderedList')}>
+          番号付きリスト
+        </button>
+        <button onClick={handleImageClick} className={styles.toolbarButton}>
+          画像追加
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onChange={handleImageUpload}
+          hidden
+        />
+        <button onClick={handleLink} className={buttonClass('link')}>
+          🔗
+        </button>
+        <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButton}>
+          HTMLインポート
+        </button>
+      </div>
+      {showHtmlImport && (
+        <HtmlImportModal
+          onImport={handleHtmlImport}
+          onClose={() => setShowHtmlImport(false)}
+        />
+      )}
+    </>
   );
 }
