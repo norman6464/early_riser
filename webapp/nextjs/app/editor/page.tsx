@@ -16,6 +16,7 @@ import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
+import LinkCard from './_components/LinkCard/linkCardExtension';
 import Toolbar from './_components/ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import type { HtmlImportData } from './_components/HtmlImportModal/HtmlImportModal';
@@ -114,6 +115,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       ListItem,
       Bold,
       Italic,
+      LinkCard,
     ],
     content: initialContent,
     immediatelyRender: false,

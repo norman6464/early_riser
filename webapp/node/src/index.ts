@@ -49,6 +49,68 @@ app.use('*', cors({
   allowHeaders: ['Content-Type'],
 }))
 
+// GET /ogp?url=<url> - Fetch OGP metadata from a URL
+app.get('/ogp', async (c) => {
+  const url = c.req.query('url')
+
+  if (!url) {
+    return c.json({ code: 'MISSING_URL', message: 'URL parameter is required' }, 400)
+  }
+
+  // Validate URL format
+  try {
+    new URL(url)
+  } catch {
+    return c.json({ code: 'INVALID_URL', message: 'Invalid URL format' }, 400)
+  }
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'bot',
+      },
+      signal: AbortSignal.timeout(5000),
+    })
+
+    if (!response.ok) {
+      return c.json({ code: 'FETCH_FAILED', message: `Failed to fetch URL: ${response.status}` }, 502)
+    }
+
+    const html = await response.text()
+
+    // Parse OGP meta tags
+    const getMetaContent = (property: string): string => {
+      const regex = new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']*)["']`, 'i')
+      const match = html.match(regex)
+      if (match) return match[1]
+
+      // Try reversed attribute order (content before property)
+      const regex2 = new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${property}["']`, 'i')
+      const match2 = html.match(regex2)
+      return match2 ? match2[1] : ''
+    }
+
+    const title = getMetaContent('og:title') || getMetaContent('twitter:title') || (() => {
+      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i)
+      return titleMatch ? titleMatch[1] : ''
+    })()
+
+    const description = getMetaContent('og:description') || getMetaContent('twitter:description') || getMetaContent('description')
+
+    let image = getMetaContent('og:image') || getMetaContent('twitter:image')
+    // Resolve relative image URLs
+    if (image && !image.startsWith('http')) {
+      const baseUrl = new URL(url)
+      image = new URL(image, baseUrl.origin).toString()
+    }
+
+    return c.json({ url, title, description, image })
+  } catch (error) {
+    console.error('OGP fetch error:', error)
+    return c.json({ code: 'FETCH_ERROR', message: 'Failed to fetch OGP data' }, 502)
+  }
+})
+
 // GET /press-releases/:id
 app.get('/press-releases/:id', async (c) => {
   const idParam = c.req.param('id')
