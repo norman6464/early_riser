@@ -120,7 +120,54 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       Italic,
     ],
     content: initialContent,
-    immediatelyRender: false
+    immediatelyRender: false,
+
+    editorProps: {
+      handleDrop: function (view, event, slice, moved) {
+        // エディタ内のテキスト移動ではなく、外部からのファイルドロップか判定
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+          const file = event.dataTransfer.files[0];
+
+          // ドロップされたファイルが画像の場合のみ処理
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+
+            // ドロップされた位置の座標を取得
+            const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+            if (!coordinates) return false;
+
+            // 非同期でAPIに画像をアップロードする関数
+            const uploadDroppedImage = async () => {
+              const formData = new FormData();
+              formData.append('file', file);
+
+              try {
+                const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
+                if (!res.ok) {
+                  const data = await res.json();
+                  alert(data.error || '画像のアップロードに失敗しました');
+                  return;
+                }
+                const { url } = await res.json();
+
+                // アップロードが完了したら、ドロップした位置に画像を挿入
+                const node = view.state.schema.nodes.image.create({ src: url });
+                const transaction = view.state.tr.insert(coordinates.pos, node);
+                view.dispatch(transaction);
+              } catch {
+                alert('画像のアップロードに失敗しました');
+              }
+            };
+
+            // アップロードを実行
+            uploadDroppedImage();
+
+            return true; // Tiptapにイベントを処理したことを伝える
+          }
+        }
+        return false;
+      },
+    },
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
