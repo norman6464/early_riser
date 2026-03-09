@@ -6,6 +6,7 @@ use App\GetPressReleaseController;
 use App\SavePressReleaseController;
 use App\ImageUploadController;
 use App\TemplateController;
+use App\OgpController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,6 +31,8 @@ $app->post('/api/images/presigned-url', ImageUploadController::class . '::handle
 $app->get('/api/templates', TemplateController::class . '::list');
 $app->post('/api/templates', TemplateController::class . '::save');
 $app->delete('/api/templates/{id}', TemplateController::class . '::delete');
+
+$app->get('/api/ogp', OgpController::class . '::handle');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
