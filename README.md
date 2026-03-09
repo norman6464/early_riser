@@ -35,27 +35,7 @@ await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/a
 
 ## アーキテクチャ
 
-```
-┌─────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Users  │────▶│  S3 (Frontend)   │     │  GitHub Actions  │
-│         │     │  Next.js Static  │     │                  │
-└─────────┘     └──────────────────┘     └────────┬─────────┘
-     │                                        │         │
-     │ API                              ECR Push   S3 Sync
-     │                                        │         │
-     ▼                                        ▼         ▼
-┌──────────┐     ┌──────────────────┐     ┌──────────────────┐
-│   ALB    │────▶│  ECS Fargate     │     │  ECR             │
-│  :80     │     │  PHP/Slim :8080  │     │  Docker Images   │
-└──────────┘     └────────┬─────────┘     └──────────────────┘
-                          │
-                 ┌────────┼─────────┐
-                 ▼                  ▼
-        ┌──────────────┐   ┌──────────────┐
-        │  RDS         │   │  S3 (Images) │
-        │  PostgreSQL  │   │              │
-        └──────────────┘   └──────────────┘
-```
+![AWS構成図](architecture/AWS.png)
 
 詳細な構成図: [architecture/AWS.drawio](architecture/AWS.drawio)
 
