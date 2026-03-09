@@ -90,7 +90,8 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     if (!url) return;
 
     try {
-      const response = await fetch(`/api/ogp?url=${encodeURIComponent(url)}`);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const response = await fetch(`${API_URL}/api/ogp?url=${encodeURIComponent(url)}`);
       if (!response.ok) {
         alert('OGP情報の取得に失敗しました。');
         return;
