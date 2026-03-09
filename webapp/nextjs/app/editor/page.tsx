@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
@@ -94,6 +94,8 @@ const UPLOAD_API_URL = `${API_URL}/api/upload`;
 
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
+  const titleCount = title.length;
+  const [bodyCount, setBodyCount] = useState(0);
   const editor = useEditor({
     extensions: [
       Document,
@@ -178,6 +180,22 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
+
+
+  useEffect(() => {
+    if (!editor) return;
+    const updateCount = () => {
+      setBodyCount(editor.getText().length);
+    };
+
+    updateCount();
+    editor.on('update', updateCount);
+
+    return () => {
+      editor.off('update', updateCount);
+    };
+  }, [editor]);
+  
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -199,9 +217,11 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               placeholder="タイトルを入力してください"
               className={styles.titleInput}
             />
+            <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
           <Toolbar editor={editor} />
           <EditorContent editor={editor} />
+          <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
       </main>
     </div>
