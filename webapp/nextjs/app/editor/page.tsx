@@ -126,6 +126,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               type="button"
               onClick={() => editor?.commands.toggleBulletList()}
               className={`${styles.toolbarButton} ${editor?.isActive('bulletList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('bulletList') ?? false}
             >
               箇条書き
             </button>
@@ -133,6 +134,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               type="button"
               onClick={() => editor?.commands.toggleOrderedList()}
               className={`${styles.toolbarButton} ${editor?.isActive('orderedList') ? styles.toolbarButtonActive : ''}`}
+              aria-pressed={editor?.isActive('orderedList') ?? false}
             >
               番号付きリスト
             </button>

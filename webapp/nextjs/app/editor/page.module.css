@@ -97,9 +97,9 @@
 }
 
 .toolbarButtonActive {
-  background-color: #007bff;
+  background-color: #0056b3;
   color: white;
-  border-color: #007bff;
+  border-color: #0056b3;
 }
 
 .editorWrapper :global(.tiptap) {
