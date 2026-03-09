@@ -8,12 +8,13 @@ import Heading from '@tiptap/extension-heading';
 import Image from '@tiptap/extension-image';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
-import Underline from '@tiptap/extension-underline'
 import ImageNodeView from './_components/ImageNodeView';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
@@ -95,13 +96,28 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
     extensions: [
-      Document, Heading,
+      
+      Document,
+      Heading,
+     
       Image.extend({
         addNodeView() {
           return ReactNodeViewRenderer(ImageNodeView);
         },
       }),
-      Paragraph, Text, BulletList, OrderedList, ListItem, Bold, Italic, Underline,
+      Paragraph,
+      Text,
+      Link.configure({
+        HTMLAttributes: {
+          style: 'color: blue; text-decoration: underline; text-decoration-color: blue;',
+        },
+      }),
+      Underline,
+      BulletList,
+      OrderedList,
+      ListItem,
+      Bold,
+      Italic,
     ],
     content: initialContent,
     immediatelyRender: false
@@ -157,6 +173,13 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
+  const handleLink = () => {
+    if (!editor) return;
+    const url = prompt('リンクURLを入力してください');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -216,6 +239,9 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             hidden
           />
 
+            <button onClick={handleLink} className={styles.linkButton}>
+              🔗
+            </button>
           </div>
           <EditorContent editor={editor} />
         </div>
