@@ -16,15 +16,6 @@ $app->options('/{routes:.+}', function (ServerRequestInterface $request, Respons
     return $response;
 });
 
-// Add CORS middleware
-$app->add(function (ServerRequestInterface $request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
-});
-
 // Health check for ALB
 $app->get('/', function (ServerRequestInterface $request, ResponseInterface $response) {
     $response->getBody()->write(json_encode(['status' => 'ok']));
@@ -41,5 +32,14 @@ $app->post('/api/images/presigned-url', ImageUploadController::class . '::handle
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
+
+// Add CORS middleware (outermost — ensures CORS headers on ALL responses including errors)
+$app->add(function (ServerRequestInterface $request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+});
 
 $app->run();

@@ -9,9 +9,10 @@ import styles from './Toolbar.module.css';
 interface ToolbarProps {
   editor: Editor | null;
   onHtmlImport: (data: HtmlImportData) => void;
+  onImageUploaded?: () => void;
 }
 
-export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
+export default function Toolbar({ editor, onHtmlImport, onImageUploaded }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showHtmlImport, setShowHtmlImport] = useState(false);
 
@@ -25,6 +26,7 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
       const { uploadUrl, imageUrl } = await getPresignedUrl(file.type, file.name);
       await uploadToS3(uploadUrl, file);
       editor.chain().focus().setImage({ src: imageUrl }).run();
+      onImageUploaded?.();
     } catch {
       alert('画像のアップロードに失敗しました');
     } finally {

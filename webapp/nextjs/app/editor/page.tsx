@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
@@ -152,6 +152,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
                 const node = view.state.schema.nodes.image.create({ src: imageUrl });
                 const transaction = view.state.tr.insert(coordinates.pos, node);
                 view.dispatch(transaction);
+                handleSave();
               } catch {
                 alert('画像のアップロードに失敗しました');
               }
@@ -224,7 +225,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!editor) return;
 
     const content = JSON.stringify(editor.getJSON());
@@ -273,7 +274,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             />
             <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
-          <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
+          <Toolbar editor={editor} onHtmlImport={handleHtmlImport} onImageUploaded={handleSave} />
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
           {validationError && <div className={styles.validationError}>{validationError}</div>}
