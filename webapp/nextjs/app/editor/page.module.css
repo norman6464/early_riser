@@ -58,6 +58,53 @@
   margin-bottom: 1.5rem;
 }
 
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.boldButton {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.boldButton:hover {
+  background-color: #e9ecef;
+}
+
+.italicButton {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.italicButton:hover {
+  background-color: #e9ecef;
+}
+
+.underlineButton {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.underlineButton:hover {
+  background-color: #e9ecef;
+}
+
 .titleInput {
   width: 100%;
   padding: 0.75rem;
@@ -134,5 +181,5 @@
 }
 
 .error {
-  color: #dc3545;
+  color: #96696e;
 }

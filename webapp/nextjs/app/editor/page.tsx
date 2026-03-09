@@ -10,6 +10,9 @@ import Text from '@tiptap/extension-text';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Underline from '@tiptap/extension-underline'
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -85,12 +88,27 @@ interface EditorProps {
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text, BulletList, OrderedList, ListItem],
+    extensions: [Document, Heading, Paragraph, Text, BulletList, OrderedList, ListItem, Bold, Italic, Underline],
     content: initialContent,
     immediatelyRender: false
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
+
+  const handleBold = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleBold().run();
+  };
+
+  const handleItalic = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleItalic().run();
+  };
+
+  const handleUnderline = () => {
+    if (!editor) return;
+    editor.chain().focus().toggleUnderline().run();
+  };
 
   const handleSave = () => {
     if (!editor) return;
@@ -122,6 +140,15 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             />
           </div>
           <div className={styles.toolbar}>
+            <button onClick={handleBold} className={styles.boldButton}>
+              <strong>B</strong>
+            </button>
+            <button onClick={handleItalic} className={styles.italicButton}>
+              <em>I</em>
+            </button>
+            <button onClick={handleUnderline} className={styles.underlineButton}>
+              <u>U</u>
+            </button>
             <button
               type="button"
               onClick={() => editor?.commands.toggleBulletList()}
