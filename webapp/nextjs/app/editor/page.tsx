@@ -7,6 +7,8 @@ import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
+import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -82,7 +84,18 @@ interface EditorProps {
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text],
+    extensions: [
+      Document,
+      Heading,
+      Paragraph,
+      Text,
+      Link.configure({
+        HTMLAttributes: {
+          style: 'color: blue; text-decoration: underline; text-decoration-color: blue;',
+        },
+      }),
+      Underline,
+    ],
     content: initialContent,
     immediatelyRender: false
   });
@@ -98,6 +111,13 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
+  const handleLink = () => {
+    if (!editor) return;
+    const url = prompt('リンクURLを入力してください');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -117,6 +137,11 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
               placeholder="タイトルを入力してください"
               className={styles.titleInput}
             />
+          </div>
+          <div className={styles.toolbar}>
+            <button onClick={handleLink} className={styles.linkButton}>
+              🔗
+            </button>
           </div>
           <EditorContent editor={editor} />
         </div>
