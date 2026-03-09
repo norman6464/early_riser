@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
@@ -18,6 +18,7 @@ import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
 import Toolbar from './_components/ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
+import type { HtmlImportData } from './_components/HtmlImportModal/HtmlImportModal';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -39,8 +40,6 @@ function usePressReleaseQuery() {
 }
 
 function useSavePressReleaseMutation() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
       const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`, {
@@ -54,9 +53,6 @@ function useSavePressReleaseMutation() {
         throw new Error('保存に失敗しました');
       }
       return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
     },
     onError: (error: Error) => {
       alert(`エラー: ${error.message}`);
@@ -161,7 +157,55 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     },
   });
   const { isPending, mutate } = useSavePressReleaseMutation();
-  
+  const lastSavedRef = useRef<string>(
+    JSON.stringify({
+      title: initialTitle,
+      content: JSON.stringify(initialContent),
+    }),
+  );
+
+  // 5秒ごとの自動保存（変更がある場合のみ）
+  useEffect(() => {
+    if (!editor) return;
+
+    const interval = setInterval(() => {
+      if (isPending) return;
+
+      const currentContent = JSON.stringify(editor.getJSON());
+      const currentData = JSON.stringify({ title, content: currentContent });
+
+      if (currentData !== lastSavedRef.current) {
+        mutate({ title, content: currentContent }, {
+          onSuccess: () => {
+            lastSavedRef.current = currentData;
+          },
+        });
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [editor, title, mutate, isPending]);
+
+  const handleHtmlImport = (data: HtmlImportData) => {
+    if (data.title) {
+      setTitle(data.title);
+    }
+    if (editor && data.body) {
+      editor.chain().focus().setContent(data.body).run();
+    }
+  };
+
+  const handleSave = () => {
+    if (!editor) return;
+
+    const content = JSON.stringify(editor.getJSON());
+    const currentData = JSON.stringify({ title, content });
+    mutate({ title, content }, {
+      onSuccess: () => {
+        lastSavedRef.current = currentData;
+      },
+    });
+  };
   useEffect(() => {
     if (!editor) return;
     const updateCount = () => {
@@ -209,8 +253,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             />
             <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
-          <Toolbar editor={editor} />
-
+          <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
