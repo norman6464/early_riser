@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
+import Image from '@tiptap/extension-image';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import Link from '@tiptap/extension-link';
@@ -14,9 +15,12 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
+import ImageNodeView from './_components/ImageNodeView';
+import Toolbar from './_components/ToolBar/Toolbar';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const PRESS_RELEASE_ID = 1;
 const queryKey = ['press-release', PRESS_RELEASE_ID];
 
@@ -24,7 +28,7 @@ function usePressReleaseQuery() {
   return useQuery({
     queryKey,
     queryFn: async (): Promise<PressRelease> => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`);
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`);
       if (!response.ok) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
@@ -38,7 +42,7 @@ function useSavePressReleaseMutation() {
 
   return useMutation({
     mutationFn: async (data: { title: string; content: string }) => {
-      const response = await fetch(`/api/press-releases/${PRESS_RELEASE_ID}`, {
+      const response = await fetch(`${API_URL}/api/press-releases/${PRESS_RELEASE_ID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,6 +90,8 @@ interface EditorProps {
   initialContent: string;
 }
 
+const UPLOAD_API_URL = `${API_URL}/api/upload`;
+
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const titleCount = title.length;
@@ -94,6 +100,11 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     extensions: [
       Document,
       Heading,
+      Image.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(ImageNodeView);
+        },
+      }),
       Paragraph,
       Text,
       Link.configure({
@@ -109,25 +120,56 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       Italic,
     ],
     content: initialContent,
-    immediatelyRender: false
+    immediatelyRender: false,
+    editorProps: {
+      handleDrop: function (view, event, slice, moved) {
+        // エディタ内のテキスト移動ではなく、外部からのファイルドロップか判定
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+          const file = event.dataTransfer.files[0];
+
+          // ドロップされたファイルが画像の場合のみ処理
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+
+            // ドロップされた位置の座標を取得
+            const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+            if (!coordinates) return false;
+
+            // 非同期でAPIに画像をアップロードする関数
+            const uploadDroppedImage = async () => {
+              const formData = new FormData();
+              formData.append('file', file);
+
+              try {
+                const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
+                if (!res.ok) {
+                  const data = await res.json();
+                  alert(data.error || '画像のアップロードに失敗しました');
+                  return;
+                }
+                const { url } = await res.json();
+
+                // アップロードが完了したら、ドロップした位置に画像を挿入
+                const node = view.state.schema.nodes.image.create({ src: url });
+                const transaction = view.state.tr.insert(coordinates.pos, node);
+                view.dispatch(transaction);
+              } catch {
+                alert('画像のアップロードに失敗しました');
+              }
+            };
+
+            // アップロードを実行
+            uploadDroppedImage();
+
+            return true; // Tiptapにイベントを処理したことを伝える
+          }
+        }
+        return false;
+      },
+    },
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
-
-  const handleBold = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleBold().run();
-  };
-
-  const handleItalic = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleItalic().run();
-  };
-
-  const handleUnderline = () => {
-    if (!editor) return;
-    editor.chain().focus().toggleUnderline().run();
-  };
 
   const handleSave = () => {
     if (!editor) return;
@@ -138,17 +180,10 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     });
   };
 
-  const handleLink = () => {
-    if (!editor) return;
-    const url = prompt('リンクURLを入力してください');
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
-    }
-  };
+
 
   useEffect(() => {
     if (!editor) return;
-
     const updateCount = () => {
       setBodyCount(editor.getText().length);
     };
@@ -160,14 +195,16 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       editor.off('update', updateCount);
     };
   }, [editor]);
-
+  
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
-        <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
-          {isPending ? '保存中...' : '保存'}
-        </button>
+        <div className={styles.headerButtons}>
+          <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
+            {isPending ? '保存中...' : '保存'}
+          </button>
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -182,36 +219,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             />
             <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
-          <div className={styles.toolbar}>
-            <button onClick={handleBold} className={styles.boldButton}>
-              <strong>B</strong>
-            </button>
-            <button onClick={handleItalic} className={styles.italicButton}>
-              <em>I</em>
-            </button>
-            <button onClick={handleUnderline} className={styles.underlineButton}>
-              <u>U</u>
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.commands.toggleBulletList()}
-              className={`${styles.toolbarButton} ${editor?.isActive('bulletList') ? styles.toolbarButtonActive : ''}`}
-              aria-pressed={editor?.isActive('bulletList') ?? false}
-            >
-              箇条書き
-            </button>
-            <button
-              type="button"
-              onClick={() => editor?.commands.toggleOrderedList()}
-              className={`${styles.toolbarButton} ${editor?.isActive('orderedList') ? styles.toolbarButtonActive : ''}`}
-              aria-pressed={editor?.isActive('orderedList') ?? false}
-            >
-              番号付きリスト
-            </button>
-            <button onClick={handleLink} className={styles.linkButton}>
-              🔗
-            </button>
-          </div>
+          <Toolbar editor={editor} />
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
