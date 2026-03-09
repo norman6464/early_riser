@@ -48,20 +48,43 @@
   color: #333;
 }
 
-.textarea {
-  width: 100%;
-  font-family: monospace;
-  font-size: 0.875rem;
-  padding: 0.75rem;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  resize: vertical;
-  box-sizing: border-box;
+.fileArea {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.textarea:focus {
-  outline: none;
-  border-color: #0056b3;
+.fileButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fileButton:hover {
+  background: #e9ecef;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.parsedSection {
+  margin-bottom: 0.75rem;
+}
+
+.parsedTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
 }
 
 .preview {

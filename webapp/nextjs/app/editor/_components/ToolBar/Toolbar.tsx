@@ -3,14 +3,15 @@
 import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
-import HtmlImportModal from '../HtmlImportModal/HtmlImportModal';
+import HtmlImportModal, { type HtmlImportData } from '../HtmlImportModal/HtmlImportModal';
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
   editor: Editor | null;
+  onHtmlImport: (data: HtmlImportData) => void;
 }
 
-export default function Toolbar({ editor }: ToolbarProps) {
+export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showHtmlImport, setShowHtmlImport] = useState(false);
 
@@ -62,8 +63,8 @@ export default function Toolbar({ editor }: ToolbarProps) {
     }
   };
 
-  const handleHtmlImport = (html: string) => {
-    editor.chain().focus().setContent(html).run();
+  const handleHtmlImport = (data: HtmlImportData) => {
+    onHtmlImport(data);
   };
 
   const buttonClass = (name: string) =>

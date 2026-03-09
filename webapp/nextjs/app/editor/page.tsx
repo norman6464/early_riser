@@ -18,6 +18,7 @@ import Italic from '@tiptap/extension-italic';
 import ImageNodeView from './_components/ImageNodeView';
 import Toolbar from './_components/ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
+import type { HtmlImportData } from './_components/HtmlImportModal/HtmlImportModal';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -186,6 +187,15 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     return () => clearInterval(interval);
   }, [editor, title, mutate, isPending]);
 
+  const handleHtmlImport = (data: HtmlImportData) => {
+    if (data.title) {
+      setTitle(data.title);
+    }
+    if (editor && data.body) {
+      editor.chain().focus().setContent(data.body).run();
+    }
+  };
+
   const handleSave = () => {
     if (!editor) return;
 
@@ -237,7 +247,7 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             />
             <div className={styles.charCount}>タイトル: {titleCount}文字</div>
           </div>
-          <Toolbar editor={editor} />
+          <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
