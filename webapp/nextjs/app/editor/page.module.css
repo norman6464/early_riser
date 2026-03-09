@@ -19,6 +19,12 @@
   font-size: 1.5rem;
 }
 
+.headerButtons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .saveButton {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
@@ -56,14 +62,6 @@
 
 .titleInputWrapper {
   margin-bottom: 1.5rem;
-}
-
-.toolbar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
 }
 
 .boldButton {
@@ -153,6 +151,7 @@
   outline: none;
   min-height: 400px;
 }
+
 
 .editorWrapper :global(.tiptap) p {
   margin: 1em 0;

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, ReactNodeViewRenderer } from '@tiptap/react';
 import Document from '@tiptap/extension-document';
 import Heading from '@tiptap/extension-heading';
+import Image from '@tiptap/extension-image';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import Link from '@tiptap/extension-link';
@@ -14,6 +15,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
+import ImageNodeView from './_components/ImageNodeView';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
 
@@ -86,12 +88,23 @@ interface EditorProps {
   initialContent: string;
 }
 
+// TODO: PHP APIに置き換える際はこのURLを変更する
+const UPLOAD_API_URL = '/api/upload';
+
 function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useEditor({
     extensions: [
+      
       Document,
       Heading,
+     
+      Image.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(ImageNodeView);
+        },
+      }),
       Paragraph,
       Text,
       Link.configure({
@@ -127,6 +140,31 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     editor.chain().focus().toggleUnderline().run();
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(UPLOAD_API_URL, { method: 'POST', body: formData });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || '画像のアップロードに失敗しました');
+        return;
+      }
+      const { url } = await res.json();
+      const alt = window.prompt('画像の代替テキストを入力してください', '') ?? '';
+      editor.chain().focus().setImage({ src: url, alt }).run();
+    } catch {
+      alert('画像のアップロードに失敗しました');
+    }
+
+    // 同じファイルを連続選択できるようにリセット
+    e.target.value = '';
+  };
+
   const handleSave = () => {
     if (!editor) return;
 
@@ -147,9 +185,11 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
-        <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
-          {isPending ? '保存中...' : '保存'}
-        </button>
+        <div className={styles.headerButtons}>
+          <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
+            {isPending ? '保存中...' : '保存'}
+          </button>
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -189,6 +229,17 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
             >
               番号付きリスト
             </button>
+            <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton}>
+            画像追加
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            onChange={handleImageUpload}
+            hidden
+          />
+
             <button onClick={handleLink} className={styles.linkButton}>
               🔗
 
