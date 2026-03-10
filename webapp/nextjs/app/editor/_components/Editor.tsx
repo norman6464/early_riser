@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import {
+  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles,
+} from 'lucide-react';
 import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
 import CommentSection from './CommentSection';
@@ -116,7 +119,6 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
       setTitle(correctedTitle);
     }
     if (editor && correctedBody !== editor.getText()) {
-      // 本文をプレーンテキストの段落として設定
       const paragraphs = correctedBody.split('\n').filter(line => line.trim() !== '');
       const content = {
         type: 'doc',
@@ -162,22 +164,35 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>プレスリリースエディター</h1>
+        <h1 className={styles.title}>
+          <Newspaper size={20} />
+          Press Release Editor
+        </h1>
         <div className={styles.headerButtons}>
-          <Link href="/settings" className={styles.settingsLink}>⚙ 設定</Link>
-          <button onClick={() => setShowProofread(true)} className={styles.templateButton}>
+          <Link href="/settings" className={styles.headerButton}>
+            <Settings size={15} />
+            設定
+          </Link>
+          <button onClick={() => setShowProofread(true)} className={styles.headerButton}>
+            <SpellCheck size={15} />
             誤字修正
           </button>
-          <button onClick={() => setTemplateModal('ai-generate')} className={styles.templateButton}>
-            AIテンプレート生成
+          <button onClick={() => setTemplateModal('ai-generate')} className={styles.headerButton}>
+            <Sparkles size={15} />
+            AIテンプレート
           </button>
-          <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
-            テンプレートから作成
+          <div className={styles.divider} />
+          <button onClick={() => setTemplateModal('load')} className={styles.headerButton}>
+            <FolderOpen size={15} />
+            テンプレート読込
           </button>
-          <button onClick={() => setTemplateModal('save')} className={styles.templateButton}>
+          <button onClick={() => setTemplateModal('save')} className={styles.headerButton}>
+            <BookmarkPlus size={15} />
             テンプレート保存
           </button>
+          <div className={styles.divider} />
           <button onClick={handleSave} className={styles.saveButton} disabled={isPending}>
+            <Save size={15} />
             {isPending ? '保存中...' : '保存'}
           </button>
         </div>
@@ -193,13 +208,17 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
               placeholder="タイトルを入力してください"
               className={styles.titleInput}
             />
-            <div className={styles.charCount}>タイトル: {titleCount}文字</div>
+            <div className={`${styles.charCount} ${titleCount > TITLE_MAX_LENGTH ? styles.charCountOver : ''}`}>
+              {titleCount} / {TITLE_MAX_LENGTH}
+            </div>
           </div>
           <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
           <EditorContent editor={editor} />
-          <div className={styles.charCount}>本文: {bodyCount}文字</div>
+          <div className={`${styles.charCount} ${bodyCount > BODY_MAX_LENGTH ? styles.charCountOver : ''}`}>
+            {bodyCount} / {BODY_MAX_LENGTH}
+          </div>
         </div>
-        
+
         <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
       </main>
 

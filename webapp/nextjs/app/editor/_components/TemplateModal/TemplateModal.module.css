@@ -4,7 +4,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,39 +14,47 @@
 
 .modal {
   background: white;
-  border-radius: 8px;
-  width: 550px;
+  border-radius: 12px;
+  width: 520px;
   max-width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
   padding: 1.5rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   margin: 0;
+  color: #111827;
 }
 
 .closeButton {
-  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
   border: none;
-  font-size: 1.25rem;
+  border-radius: 6px;
+  font-size: 1rem;
   cursor: pointer;
-  color: #666;
-  padding: 0.25rem;
+  color: #9ca3af;
+  transition: all 0.15s ease;
 }
 
 .closeButton:hover {
-  color: #333;
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .saveSection {
@@ -57,54 +66,61 @@
 .nameInput {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  font-size: 0.8125rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .nameInput:focus {
-  border-color: #0056b3;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .saveButton {
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  background: #0056b3;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: #2563eb;
   color: white;
-  border: 1px solid #0056b3;
-  border-radius: 4px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .saveButton:hover {
-  background: #004094;
+  background: #1d4ed8;
 }
 
 .saveButton:disabled {
-  background: #6c9bd2;
-  border-color: #6c9bd2;
+  background: #93c5fd;
+  border-color: #93c5fd;
   cursor: not-allowed;
 }
 
 .listSection {
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #f3f4f6;
   padding-top: 1rem;
 }
 
 .listLabel {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #9ca3af;
   margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .loading,
 .empty {
   text-align: center;
-  color: #888;
-  font-size: 0.875rem;
-  padding: 1rem 0;
+  color: #9ca3af;
+  font-size: 0.8125rem;
+  padding: 1.5rem 0;
 }
 
 .list {
@@ -117,12 +133,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.625rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 0.625rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.1s ease;
 }
 
-.listItem:last-child {
-  border-bottom: none;
+.listItem:hover {
+  background-color: #f9fafb;
+}
+
+.listItem + .listItem {
+  border-top: 1px solid #f9fafb;
 }
 
 .listItemInfo {
@@ -134,16 +155,17 @@
 }
 
 .listItemName {
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
   font-weight: 600;
+  color: #111827;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .listItemTitle {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 0.6875rem;
+  color: #9ca3af;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -157,32 +179,36 @@
 }
 
 .loadButton {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
-  background: #0056b3;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #2563eb;
   color: white;
-  border: 1px solid #0056b3;
-  border-radius: 4px;
+  border: 1px solid #2563eb;
+  border-radius: 5px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .loadButton:hover {
-  background: #004094;
+  background: #1d4ed8;
 }
 
 .deleteButton {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.8rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   background: white;
-  color: #dc3545;
-  border: 1px solid #dc3545;
-  border-radius: 4px;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 5px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .deleteButton:hover {
-  background: #dc3545;
-  color: white;
+  background: #fef2f2;
+  border-color: #ef4444;
 }
 
 .deleteButton:disabled {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { API_URL } from '../../_lib/constants';
 import styles from './ProofreadModal.module.css';
 
@@ -58,7 +59,7 @@ export default function ProofreadModal({ title, body, onApply, onClose }: Proofr
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>誤字修正</h2>
-          <button onClick={onClose} className={styles.closeButton}>✕</button>
+          <button onClick={onClose} className={styles.closeButton}><X size={16} /></button>
         </div>
 
         {isLoading && (
