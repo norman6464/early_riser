@@ -3,10 +3,11 @@ import { getPool } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const pressReleaseId = parseInt(params.id);
+    const { id } = await params;
+    const pressReleaseId = parseInt(id);
 
     if (isNaN(pressReleaseId)) {
       return NextResponse.json(
@@ -33,10 +34,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const pressReleaseId = parseInt(params.id);
+    const { id } = await params;
+    const pressReleaseId = parseInt(id);
 
     if (isNaN(pressReleaseId)) {
       return NextResponse.json(
