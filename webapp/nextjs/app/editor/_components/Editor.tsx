@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import Toolbar from './ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
+import ProofreadModal from './ProofreadModal/ProofreadModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -22,6 +23,7 @@ interface EditorProps {
 export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
+  const [showProofread, setShowProofread] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -106,6 +108,25 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
     }
   };
 
+  const handleProofreadApply = (correctedTitle: string, correctedBody: string) => {
+    if (correctedTitle !== title) {
+      setTitle(correctedTitle);
+    }
+    if (editor && correctedBody !== editor.getText()) {
+      // 本文をプレーンテキストの段落として設定
+      const paragraphs = correctedBody.split('\n').filter(line => line.trim() !== '');
+      const content = {
+        type: 'doc',
+        content: paragraphs.map(p => ({
+          type: 'paragraph',
+          content: [{ type: 'text', text: p }],
+        })),
+      };
+      editor.chain().focus().setContent(content).run();
+    }
+    setShowProofread(false);
+  };
+
   const handleSave = () => {
     if (!editor) return;
     const currentTitleCount = countWithoutLineBreaks(title);
@@ -140,6 +161,9 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
+          <button onClick={() => setShowProofread(true)} className={styles.templateButton}>
+            誤字修正
+          </button>
           <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
             テンプレートから作成
           </button>
@@ -169,6 +193,15 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
       </main>
+
+      {showProofread && editor && (
+        <ProofreadModal
+          title={title}
+          body={editor.getText()}
+          onApply={handleProofreadApply}
+          onClose={() => setShowProofread(false)}
+        />
+      )}
 
       {templateModal && (
         <TemplateModal
