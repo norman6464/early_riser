@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
+import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -21,7 +23,7 @@ interface EditorProps {
 
 export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
+  const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -140,6 +142,10 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
+          <Link href="/settings" className={styles.settingsLink}>⚙ 設定</Link>
+          <button onClick={() => setTemplateModal('ai-generate')} className={styles.templateButton}>
+            AIテンプレート生成
+          </button>
           <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
             テンプレートから作成
           </button>
@@ -170,12 +176,19 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
         </div>
       </main>
 
-      {templateModal && (
+      {(templateModal === 'save' || templateModal === 'load') && (
         <TemplateModal
           mode={templateModal}
           currentTitle={title}
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {templateModal === 'ai-generate' && (
+        <AiTemplateModal
+          onApply={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
         />
       )}

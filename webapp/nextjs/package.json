@@ -17,8 +17,6 @@
     "@tiptap/extension-image": "^3.20.1",
     "@tiptap/extension-italic": "^3.20.1",
     "@tiptap/extension-link": "^3.20.1",
-    "@tiptap/extension-image": "^3.20.1",
-    "@tiptap/extension-italic": "^3.20.1",
     "@tiptap/extension-list-item": "^3.20.1",
     "@tiptap/extension-ordered-list": "^3.20.1",
     "@tiptap/extension-paragraph": "^3.20.0",
@@ -28,9 +26,11 @@
     "@tiptap/react": "^3.20.0",
     "@types/pg": "^8.18.0",
     "next": "16.1.6",
+    "openai": "^6.27.0",
     "pg": "^8.20.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.71.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
