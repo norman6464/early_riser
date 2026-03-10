@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { X, Download, Trash2 } from 'lucide-react';
 import type { Template } from '@/lib/types';
 import styles from './TemplateModal.module.css';
 
@@ -83,7 +84,7 @@ export default function TemplateModal({ mode, currentTitle, currentContent, onLo
           <h2 className={styles.title}>
             {mode === 'save' ? 'テンプレートとして保存' : 'テンプレートから作成'}
           </h2>
-          <button onClick={onClose} className={styles.closeButton}>✕</button>
+          <button onClick={onClose} className={styles.closeButton}><X size={16} /></button>
         </div>
 
         {mode === 'save' && (
