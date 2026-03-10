@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
 import CommentSection from './CommentSection';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
+import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
 import ProofreadModal from './ProofreadModal/ProofreadModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
@@ -23,7 +25,7 @@ interface EditorProps {
 
 export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
+  const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
   const [showProofread, setShowProofread] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
@@ -162,8 +164,12 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
+          <Link href="/settings" className={styles.settingsLink}>⚙ 設定</Link>
           <button onClick={() => setShowProofread(true)} className={styles.templateButton}>
             誤字修正
+          </button>
+          <button onClick={() => setTemplateModal('ai-generate')} className={styles.templateButton}>
+            AIテンプレート生成
           </button>
           <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
             テンプレートから作成
@@ -206,12 +212,19 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
         />
       )}
 
-      {templateModal && (
+      {(templateModal === 'save' || templateModal === 'load') && (
         <TemplateModal
           mode={templateModal}
           currentTitle={title}
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {templateModal === 'ai-generate' && (
+        <AiTemplateModal
+          onApply={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
         />
       )}
