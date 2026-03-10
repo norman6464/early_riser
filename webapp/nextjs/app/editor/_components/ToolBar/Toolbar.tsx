@@ -6,7 +6,7 @@ import {
   Undo2, Redo2,
   Heading2, Heading3,
   Bold, Italic, Underline,
-  List, ListOrdered, TextQuote,
+  List, ListOrdered, TextQuote, Minus,
   ImagePlus, ImageIcon,
   Link2, LayoutPanelLeft,
   FileCode2,
@@ -173,6 +173,11 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
           <Tooltip label="引用">
             <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass('blockquote')}>
               <TextQuote size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="区切り線">
+            <button onClick={() => editor.chain().focus().setHorizontalRule().run()} className={styles.toolbarButton}>
+              <Minus size={iconSize} />
             </button>
           </Tooltip>
         </div>
