@@ -27,6 +27,7 @@ function renderContentPreview(content: TemplateCandidate['content']): string {
         return '';
       })
       .join('');
+    // AI生成テキストをHTML文字列結合しているため、XSS防止にサニタイズが必要
     return DOMPurify.sanitize(html);
   } catch {
     return '';
