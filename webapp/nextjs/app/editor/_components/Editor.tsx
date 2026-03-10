@@ -205,27 +205,29 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
       </header>
 
       <main className={styles.main}>
-        <div className={styles.editorWrapper}>
-          <div className={styles.titleInputWrapper}>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="タイトルを入力してください"
-              className={styles.titleInput}
-            />
-            <div className={`${styles.charCount} ${titleCount > TITLE_MAX_LENGTH ? styles.charCountOver : ''}`}>
-              {titleCount} / {TITLE_MAX_LENGTH}
+        <div className={styles.mainContent}>
+          <div className={styles.editorWrapper}>
+            <div className={styles.titleInputWrapper}>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="タイトルを入力してください"
+                className={styles.titleInput}
+              />
+              <div className={`${styles.charCount} ${titleCount > TITLE_MAX_LENGTH ? styles.charCountOver : ''}`}>
+                {titleCount} / {TITLE_MAX_LENGTH}
+              </div>
+            </div>
+            <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
+            <EditorContent editor={editor} />
+            <div className={`${styles.charCount} ${bodyCount > BODY_MAX_LENGTH ? styles.charCountOver : ''}`}>
+              {bodyCount} / {BODY_MAX_LENGTH}
             </div>
           </div>
-          <Toolbar editor={editor} onHtmlImport={handleHtmlImport} />
-          <EditorContent editor={editor} />
-          <div className={`${styles.charCount} ${bodyCount > BODY_MAX_LENGTH ? styles.charCountOver : ''}`}>
-            {bodyCount} / {BODY_MAX_LENGTH}
-          </div>
-        </div>
 
-        <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
+          <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
+        </div>
 
         {showChat && (
           <ChatPanel onClose={() => setShowChat(false)} />
