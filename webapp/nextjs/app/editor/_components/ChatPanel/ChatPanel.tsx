@@ -14,12 +14,15 @@ interface ChatPanelProps {
 export default function ChatPanel({ onClose }: ChatPanelProps) {
   const { messages, isSending, isLoading, sendMessage } = useChat(PRESS_RELEASE_ID);
   const [input, setInput] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // メッセージが追加されたら自動スクロール
+  // メッセージが追加されたらメッセージリスト内のみスクロール
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = messageListRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
   }, [messages]);
 
   const handleSend = () => {
@@ -65,7 +68,7 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
         </button>
       </div>
 
-      <div className={styles.messageList}>
+      <div ref={messageListRef} className={styles.messageList}>
         {isLoading ? (
           <div className={styles.emptyState}>
             <div className={styles.loadingDots}>
@@ -106,7 +109,6 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
             </div>
           ))
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       <div className={styles.inputArea}>
