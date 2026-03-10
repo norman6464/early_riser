@@ -73,7 +73,10 @@ PROMPT;
             'temperature' => 0.0,
         ]);
 
-        $ch = curl_init('https://api.openai.com/v1/chat/completions');
+        $ch = @curl_init('https://api.openai.com/v1/chat/completions');
+        if ($ch === false) {
+            throw ServiceException::external('CURL_INIT_FAILED', 'Failed to initialize curl');
+        }
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,

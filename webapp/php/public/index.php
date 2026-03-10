@@ -1,5 +1,10 @@
 <?php
 
+// PHP WarningがCORSヘッダー付加前に出力されるのを防ぐ
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\GetPressReleaseController;
@@ -83,4 +88,6 @@ $app->add(function (ServerRequestInterface $request, $handler) {
         ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
 });
 
+// バッファに溜まったPHP Warning等を破棄してからSlimのレスポンスを出力
+ob_end_clean();
 $app->run();
