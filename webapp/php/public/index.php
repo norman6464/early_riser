@@ -16,6 +16,7 @@ use App\Middleware\ErrorHandlerMiddleware;
 use App\OgpController;
 use App\PressReleaseCategoryController;
 use App\ProofreadController;
+use App\AiGenerateController;
 use App\SaveCommentController;
 use App\SavePressReleaseController;
 use App\TemplateController;
@@ -65,6 +66,10 @@ $app->get('/api/press-release-categories', PressReleaseCategoryController::class
 // ── 誤字修正 ──
 $app->post('/api/proofread', ProofreadController::class . '::handle');
 
+// AI生成API
+$app->post('/api/ai/generate', AiGenerateController::class . '::handle');
+
+// Catch-all for undefined routes (return 404 instead of 405)
 // ── 404 Catch-all ──
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
     return JsonResponder::error($response, 'NOT_FOUND', 'Route not found', 404);
