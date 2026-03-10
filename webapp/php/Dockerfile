@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     git \
     unzip \
-    && docker-php-ext-install pdo pdo_pgsql \
+    libcurl4-openssl-dev \
+    && docker-php-ext-install pdo pdo_pgsql curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

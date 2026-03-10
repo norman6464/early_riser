@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
+import CommentSection from './CommentSection';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
 import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
+import ProofreadModal from './ProofreadModal/ProofreadModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -14,7 +16,7 @@ import { useBodyCount } from '../_hooks/useBodyCount';
 import { useSavePressReleaseMutation } from '../_hooks/useSavePressRelease';
 import { countWithoutLineBreaks } from '../_lib/validation';
 import { editorExtensions } from '../_lib/editorExtensions';
-import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH } from '../_lib/constants';
+import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH, PRESS_RELEASE_ID } from '../_lib/constants';
 
 interface EditorProps {
   initialTitle: string;
@@ -24,6 +26,7 @@ interface EditorProps {
 export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
+  const [showProofread, setShowProofread] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -108,6 +111,25 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
     }
   };
 
+  const handleProofreadApply = (correctedTitle: string, correctedBody: string) => {
+    if (correctedTitle !== title) {
+      setTitle(correctedTitle);
+    }
+    if (editor && correctedBody !== editor.getText()) {
+      // 本文をプレーンテキストの段落として設定
+      const paragraphs = correctedBody.split('\n').filter(line => line.trim() !== '');
+      const content = {
+        type: 'doc',
+        content: paragraphs.map(p => ({
+          type: 'paragraph',
+          content: [{ type: 'text', text: p }],
+        })),
+      };
+      editor.chain().focus().setContent(content).run();
+    }
+    setShowProofread(false);
+  };
+
   const handleSave = () => {
     if (!editor) return;
     const currentTitleCount = countWithoutLineBreaks(title);
@@ -143,6 +165,9 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
           <Link href="/settings" className={styles.settingsLink}>⚙ 設定</Link>
+          <button onClick={() => setShowProofread(true)} className={styles.templateButton}>
+            誤字修正
+          </button>
           <button onClick={() => setTemplateModal('ai-generate')} className={styles.templateButton}>
             AIテンプレート生成
           </button>
@@ -174,7 +199,18 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
+        
+        <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
       </main>
+
+      {showProofread && editor && (
+        <ProofreadModal
+          title={title}
+          body={editor.getText()}
+          onApply={handleProofreadApply}
+          onClose={() => setShowProofread(false)}
+        />
+      )}
 
       {(templateModal === 'save' || templateModal === 'load') && (
         <TemplateModal

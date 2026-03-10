@@ -3,14 +3,14 @@
 namespace App;
 
 use App\Helper\JsonResponder;
-use App\Service\PressReleaseService;
+use App\Service\CommentService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * プレスリリース取得コントローラー
+ * コメント取得コントローラー
  */
-class GetPressReleaseController
+class GetCommentController
 {
     public static function handle(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
@@ -19,7 +19,7 @@ class GetPressReleaseController
             return JsonResponder::error($response, 'INVALID_ID', 'Invalid ID');
         }
 
-        $data = PressReleaseService::getById($id);
-        return JsonResponder::json($response, $data);
+        $comments = CommentService::getByPressReleaseId($id);
+        return JsonResponder::json($response, ['comments' => $comments]);
     }
 }

@@ -125,6 +125,13 @@
   font-size: 1rem;
 }
 
+/* Editor link color unified */
+.editorWrapper :global(.tiptap) a {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: blue;
+}
+
 .editorWrapper :global(.tiptap) ul,
 .editorWrapper :global(.tiptap) ol {
   padding-left: 1.5rem;
@@ -161,4 +168,312 @@
   margin-top: 0.5rem;
   font-size: 0.875rem;
   color: #6c757d;
+}
+
+/* Comment Styles */
+.commentSection {
+  max-width: 800px;
+  margin: 2rem auto 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: white;
+}
+
+.commentTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+.commentsList {
+  margin-bottom: 2rem;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.loadingMessage,
+.noComments {
+  text-align: center;
+  color: #6c757d;
+  padding: 1rem;
+  font-size: 0.95rem;
+}
+
+.commentItem {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.commentAuthor {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.commentDate {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.commentBody {
+  color: #555;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  /* 箇条書きの行頭が枠に食い込まないように余白 + 折返し */
+  padding-left: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+/* Inline links (exclude link-card anchors) */
+.commentBody a:not(.comment-link-card) {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: blue;
+}
+
+.commentBody ul,
+.commentBody ol {
+  padding-left: 1.25rem;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.commentBody li {
+  margin: 0.15rem 0;
+}
+
+.commentBody img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.25rem 0;
+}
+
+/* Link Card (rendered in comments) */
+.commentBody .comment-link-card {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  background-color: #fff;
+  padding: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.commentBody .clc-imageWrapper {
+  flex: 0 0 120px;
+  height: 120px;
+  overflow: hidden;
+}
+
+.commentBody .clc-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.commentBody .clc-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.commentBody .clc-domain {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.commentBody .clc-title {
+  font-weight: 600;
+  margin: 0.15rem 0;
+}
+
+.commentBody .clc-description {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.commentForm {
+  border-top: 2px solid #f0f0f0;
+  padding-top: 1.5rem;
+}
+
+.commentInputTitle {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.authorInputWrapper {
+  margin-bottom: 1rem;
+}
+
+.authorLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.authorInput {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.authorInput:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.authorInput:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.commentEditorWrapper {
+  margin-bottom: 1rem;
+}
+
+.editorLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.commentToolbar {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  flex-wrap: wrap;
+}
+
+.toolbarButton {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  background-color: white;
+  color: #333;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.toolbarButton:hover:not(:disabled) {
+  background-color: #e8f4ff;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.toolbarButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbarButton.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.toolbarSeparator {
+  width: 1px;
+  height: 24px;
+  background-color: #d0d0d0;
+  margin: 0 0.25rem;
+}
+
+.commentEditor {
+  border: 1px solid #e0e0e0;
+  border-radius: 0 0 4px 4px;
+  padding: 0.75rem;
+  background-color: #fff;
+  min-height: 150px;
+}
+
+.commentEditor :global(.tiptap) {
+  outline: none;
+  min-height: 150px;
+}
+
+.commentEditor :global(.tiptap) p {
+  margin: 0.5em 0;
+  font-size: 0.95rem;
+}
+
+/* Comment form link color unified */
+.commentEditor :global(.tiptap) a {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: blue;
+}
+
+/* コメント入力エディタ内の箇条書きはみ出し対策 */
+.commentEditor :global(.tiptap) ul,
+.commentEditor :global(.tiptap) ol {
+  padding-left: 1.5rem;   
+  margin: 0.25rem 0 0.5rem;
+  list-style-position: outside;
+}
+
+.commentEditor :global(.tiptap) li {
+  line-height: 1.6;
+}
+
+.submitButton {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.95rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.submitButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
