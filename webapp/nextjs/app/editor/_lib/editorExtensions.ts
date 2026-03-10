@@ -11,6 +11,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
 import History from '@tiptap/extension-history';
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import LinkCard from '../_components/LinkCard/linkCardExtension';
@@ -36,6 +37,7 @@ export const editorExtensions = [
   ListItem,
   Blockquote,
   History,
+  HorizontalRule,
   Bold,
   Italic,
   LinkCard,
