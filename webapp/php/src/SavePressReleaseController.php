@@ -157,7 +157,7 @@ class SavePressReleaseController
 
         // タイトルと本文の長さを検証（マルチバイト対応）
         $titleLen = mb_strlen($title);
-        $contentLen = mb_strlen(json_decode($content, true)['content'][0]['content'][0]['text']);
+        $contentLen = mb_strlen(self::extractText(json_decode($content, true)));
         
         if ($titleLen > 100 || $contentLen > 500) {
             $errors = [];
@@ -180,6 +180,29 @@ class SavePressReleaseController
             'title' => $title,
             'content' => $content,
         ];
+    }
+
+    /**
+     * TipTap JSONからテキストを再帰的に抽出する
+     */
+    private static function extractText(?array $node): string
+    {
+        if ($node === null) {
+            return '';
+        }
+
+        $text = '';
+        if (isset($node['type']) && $node['type'] === 'text' && isset($node['text'])) {
+            $text .= $node['text'];
+        }
+        if (isset($node['content']) && is_array($node['content'])) {
+            foreach ($node['content'] as $child) {
+                if (is_array($child)) {
+                    $text .= self::extractText($child);
+                }
+            }
+        }
+        return $text;
     }
 
     /**
