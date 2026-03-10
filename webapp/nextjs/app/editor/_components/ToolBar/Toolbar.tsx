@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
+  Heading2, Heading3,
   Bold, Italic, Underline,
   List, ListOrdered,
   ImagePlus, ImageIcon,
@@ -99,14 +100,29 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     }
   };
 
-  const btnClass = (name: string) =>
-    `${styles.toolbarButton} ${editor.isActive(name) ? styles.toolbarButtonActive : ''}`;
+  const btnClass = (name: string, attrs?: Record<string, unknown>) =>
+    `${styles.toolbarButton} ${editor.isActive(name, attrs) ? styles.toolbarButtonActive : ''}`;
 
   const iconSize = 16;
 
   return (
     <>
       <div className={styles.toolbar}>
+        <div className={styles.toolbarGroup}>
+          <Tooltip label="見出し2">
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass('heading', { level: 2 })}>
+              <Heading2 size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="見出し3">
+            <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={btnClass('heading', { level: 3 })}>
+              <Heading3 size={iconSize} />
+            </button>
+          </Tooltip>
+        </div>
+
+        <div className={styles.toolbarDivider} />
+
         <div className={styles.toolbarGroup}>
           <Tooltip label="太字">
             <button onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass('bold')}>
