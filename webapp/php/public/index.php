@@ -22,6 +22,7 @@ use App\SaveCommentController;
 use App\SavePressReleaseController;
 use App\TemplateController;
 use App\TitleSuggestionController;
+use App\ToneAnalysisController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -69,6 +70,9 @@ $app->post('/api/ai/generate', AiGenerateController::class . '::handle');
 
 // ── AIタイトル提案 ──
 $app->post('/api/ai/suggest-titles', TitleSuggestionController::class . '::handle');
+
+// ── AIトーン分析 ──
+$app->post('/api/ai/analyze-tone', ToneAnalysisController::class . '::handle');
 
 // ── AIチャット ──
 $app->get('/api/chat/{id}/history', ChatController::class . '::history');
