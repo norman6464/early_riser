@@ -118,8 +118,16 @@
 
 .main {
   flex: 1;
+  display: flex;
+  gap: 1.5rem;
   padding: 1.5rem;
   overflow: auto;
+  align-items: flex-start;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
 }
 
 .editorWrapper {
