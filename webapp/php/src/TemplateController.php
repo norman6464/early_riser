@@ -2,33 +2,26 @@
 
 namespace App;
 
-use PDO;
+use App\Service\TemplateService;
+use App\Service\ServiceException;
 use PDOException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * テンプレートコントローラー
+ *
+ * テンプレートのCRUD操作を担当
+ */
 class TemplateController
 {
     public static function list(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         try {
-            $db = Database::getConnection();
-            $stmt = $db->query('SELECT id, name, title, content, created_at FROM templates ORDER BY created_at DESC');
-            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $templates = array_map(fn($row) => [
-                'id' => (int)$row['id'],
-                'name' => $row['name'],
-                'title' => $row['title'],
-                'content' => $row['content'],
-                'created_at' => $row['created_at'],
-            ], $rows);
-
-            $response->getBody()->write(json_encode($templates));
-            return $response->withHeader('Content-Type', 'application/json');
+            $templates = TemplateService::getAll();
+            return self::json($response, $templates);
         } catch (PDOException) {
-            $response->getBody()->write(json_encode(['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return self::json($response, ['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error'], 500);
         }
     }
 
@@ -37,34 +30,21 @@ class TemplateController
         $body = (string)$request->getBody();
         $data = json_decode($body, true);
 
-        if (!is_array($data) || empty($data['name']) || !is_string($data['name'])) {
-            $response->getBody()->write(json_encode(['code' => 'INVALID_REQUEST', 'message' => 'name is required']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+        if (!is_array($data) || !is_string($data['name'] ?? null)) {
+            return self::json($response, ['code' => 'INVALID_REQUEST', 'message' => 'name is required'], 400);
         }
 
-        $name = $data['name'];
-        $title = $data['title'] ?? '';
-        $content = $data['content'] ?? '';
-
         try {
-            $db = Database::getConnection();
-            $stmt = $db->prepare('INSERT INTO templates (name, title, content) VALUES (:name, :title, :content) RETURNING id, name, title, content, created_at');
-            $stmt->execute(['name' => $name, 'title' => $title, 'content' => $content]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            $template = [
-                'id' => (int)$row['id'],
-                'name' => $row['name'],
-                'title' => $row['title'],
-                'content' => $row['content'],
-                'created_at' => $row['created_at'],
-            ];
-
-            $response->getBody()->write(json_encode($template));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+            $template = TemplateService::create(
+                $data['name'],
+                $data['title'] ?? '',
+                $data['content'] ?? ''
+            );
+            return self::json($response, $template, 201);
+        } catch (ServiceException $e) {
+            return self::json($response, ['code' => $e->getErrorCode(), 'message' => $e->getMessage()], $e->getStatusCode());
         } catch (PDOException) {
-            $response->getBody()->write(json_encode(['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return self::json($response, ['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error'], 500);
         }
     }
 
@@ -72,25 +52,22 @@ class TemplateController
     {
         $idParam = (string)$args['id'];
         if (!ctype_digit($idParam) || (int)$idParam <= 0) {
-            $response->getBody()->write(json_encode(['code' => 'INVALID_ID', 'message' => 'Invalid ID']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            return self::json($response, ['code' => 'INVALID_ID', 'message' => 'Invalid ID'], 400);
         }
 
         try {
-            $db = Database::getConnection();
-            $stmt = $db->prepare('DELETE FROM templates WHERE id = :id');
-            $stmt->execute(['id' => (int)$idParam]);
-
-            if ($stmt->rowCount() === 0) {
-                $response->getBody()->write(json_encode(['code' => 'NOT_FOUND', 'message' => 'Template not found']));
-                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-            }
-
-            $response->getBody()->write(json_encode(['message' => 'Deleted']));
-            return $response->withHeader('Content-Type', 'application/json');
+            TemplateService::delete((int)$idParam);
+            return self::json($response, ['message' => 'Deleted']);
+        } catch (ServiceException $e) {
+            return self::json($response, ['code' => $e->getErrorCode(), 'message' => $e->getMessage()], $e->getStatusCode());
         } catch (PDOException) {
-            $response->getBody()->write(json_encode(['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+            return self::json($response, ['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error'], 500);
         }
+    }
+
+    private static function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
+    {
+        $response->getBody()->write(json_encode($data));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 }
