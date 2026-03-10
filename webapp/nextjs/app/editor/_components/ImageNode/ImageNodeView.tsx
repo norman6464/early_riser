@@ -19,23 +19,6 @@ const cursorMap: Record<ResizeDirection, string> = {
   sw: 'nesw-resize',
 };
 
-// 各方向のCSS位置クラス名
-const positionClassMap: Record<ResizeDirection, string> = {
-  n: 'handleN',
-  s: 'handleS',
-  e: 'handleE',
-  w: 'handleW',
-  ne: 'handleNE',
-  nw: 'handleNW',
-  se: 'handleSE',
-  sw: 'handleSW',
-};
-
-// 辺ハンドルかどうか
-const isEdgeHandle = (dir: ResizeDirection) => ['n', 's', 'e', 'w'].includes(dir);
-
-const ALL_DIRECTIONS: ResizeDirection[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
-
 export default function ImageNodeView({ node, updateAttributes, deleteNode, selected, editor }: NodeViewProps) {
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -91,7 +74,6 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
 
       // 角ハンドルはアスペクト比を維持
       if (isCorner) {
-        // より大きい変化量の方向に合わせてアスペクト比維持
         const widthRatio = Math.abs(newWidth - startWidth) / startWidth;
         const heightRatio = Math.abs(newHeight - startHeight) / startHeight;
         if (widthRatio >= heightRatio) {
@@ -137,6 +119,14 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
   if (width) imgStyle.width = `${width}px`;
   if (height) imgStyle.height = `${height}px`;
 
+  // ハンドル共通props生成
+  const handleProps = (dir: ResizeDirection, posClass: string, isEdge: boolean) => ({
+    className: `${styles.resizeHandle} ${isEdge ? styles.resizeHandleEdge : styles.resizeHandleCorner} ${posClass} ${showControls ? styles.resizeHandleVisible : ''}`,
+    style: { cursor: cursorMap[dir] },
+    onPointerDown: handleResizeStart(dir),
+    contentEditable: false as const,
+  });
+
   return (
     <NodeViewWrapper
       className={`${styles.imageContainer} ${selected ? styles.imageSelected : ''} ${isResizing ? styles.imageResizing : ''}`}
@@ -151,16 +141,17 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
         draggable={false}
       />
 
-      {/* 8方向リサイズハンドル */}
-      {ALL_DIRECTIONS.map((dir) => (
-        <div
-          key={dir}
-          className={`${styles.resizeHandle} ${isEdgeHandle(dir) ? styles.resizeHandleEdge : styles.resizeHandleCorner} ${styles[positionClassMap[dir]]} ${showControls ? styles.resizeHandleVisible : ''}`}
-          style={{ cursor: cursorMap[dir] }}
-          onPointerDown={handleResizeStart(dir)}
-          contentEditable={false}
-        />
-      ))}
+      {/* 四隅ハンドル */}
+      <div {...handleProps('nw', styles.handleNW, false)} />
+      <div {...handleProps('ne', styles.handleNE, false)} />
+      <div {...handleProps('se', styles.handleSE, false)} />
+      <div {...handleProps('sw', styles.handleSW, false)} />
+
+      {/* 辺ハンドル */}
+      <div {...handleProps('n', styles.handleN, true)} />
+      <div {...handleProps('s', styles.handleS, true)} />
+      <div {...handleProps('e', styles.handleE, true)} />
+      <div {...handleProps('w', styles.handleW, true)} />
 
       {/* サイズ表示 */}
       {isResizing && (width || height) && (
