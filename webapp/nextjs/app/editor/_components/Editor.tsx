@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import {
-  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles,
+  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles, MessageSquare,
 } from 'lucide-react';
 import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
@@ -12,6 +12,7 @@ import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
 import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
 import ProofreadModal from './ProofreadModal/ProofreadModal';
+import ChatPanel from './ChatPanel/ChatPanel';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -30,6 +31,7 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
   const [showProofread, setShowProofread] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -181,6 +183,10 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
             <Sparkles size={15} />
             AIテンプレート
           </button>
+          <button onClick={() => setShowChat(!showChat)} className={`${styles.headerButton} ${showChat ? styles.headerButtonActive : ''}`}>
+            <MessageSquare size={15} />
+            AIアドバイザー
+          </button>
           <div className={styles.divider} />
           <button onClick={() => setTemplateModal('load')} className={styles.headerButton}>
             <FolderOpen size={15} />
@@ -220,6 +226,10 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
         </div>
 
         <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
+
+        {showChat && (
+          <ChatPanel onClose={() => setShowChat(false)} />
+        )}
       </main>
 
       {showProofread && editor && (
