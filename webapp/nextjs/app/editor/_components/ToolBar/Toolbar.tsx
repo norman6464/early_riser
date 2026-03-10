@@ -7,7 +7,7 @@ import {
   Heading2, Heading3,
   Bold, Italic, Underline,
   List, ListOrdered, TextQuote, Minus,
-  ImagePlus, ImageIcon,
+  ImagePlus,
   Link2, LayoutPanelLeft,
   FileCode2,
 } from 'lucide-react';
@@ -24,6 +24,7 @@ interface ToolbarProps {
 export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showHtmlImport, setShowHtmlImport] = useState(false);
+  const [showImageMenu, setShowImageMenu] = useState(false);
 
   if (!editor) return null;
 
@@ -62,6 +63,10 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
+  };
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
   };
 
   const handleLink = () => {
@@ -185,24 +190,40 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
         <div className={styles.toolbarDivider} />
 
         <div className={styles.toolbarGroup}>
-          <Tooltip label="画像アップロード">
-            <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton}>
-              <ImagePlus size={iconSize} />
-            </button>
-          </Tooltip>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp"
-            multiple
-            onChange={handleImageUpload}
-            hidden
-          />
-          <Tooltip label="画像URL挿入">
-            <button onClick={addImage} className={styles.toolbarButton}>
-              <ImageIcon size={iconSize} />
-            </button>
-          </Tooltip>
+          <div
+            className={styles.dropdownWrapper}
+            onBlur={() => setTimeout(() => setShowImageMenu(false), 100)}
+            tabIndex={0}
+          >
+            <Tooltip label="画像を追加">
+              <button
+                onClick={() => setShowImageMenu((v) => !v)}
+                className={styles.toolbarButton}
+                aria-haspopup="menu"
+                aria-expanded={showImageMenu}
+              >
+                <ImagePlus size={iconSize} />
+              </button>
+            </Tooltip>
+            {showImageMenu && (
+              <div role="menu" className={styles.dropdown}>
+                <button role="menuitem" className={styles.dropdownItem} onClick={() => { openFilePicker(); setShowImageMenu(false); }}>
+                  <span>ファイルから追加</span>
+                </button>
+                <button role="menuitem" className={styles.dropdownItem} onClick={() => { addImage(); setShowImageMenu(false); }}>
+                  <span>URL から追加</span>
+                </button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              multiple
+              onChange={handleImageUpload}
+              hidden
+            />
+          </div>
           <Tooltip label="リンク">
             <button onClick={handleLink} className={btnClass('link')}>
               <Link2 size={iconSize} />
