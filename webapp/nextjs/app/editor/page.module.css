@@ -106,6 +106,13 @@
   font-size: 1rem;
 }
 
+/* Editor link color unified */
+.editorWrapper :global(.tiptap) a {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: blue;
+}
+
 .editorWrapper :global(.tiptap) ul,
 .editorWrapper :global(.tiptap) ol {
   padding-left: 1.5rem;
@@ -221,17 +228,9 @@
 
 /* Inline links (exclude link-card anchors) */
 .commentBody a:not(.comment-link-card) {
-  color: #1a73e8;
+  color: blue;
   text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.commentBody a:not(.comment-link-card):hover {
-  text-decoration-color: #1a73e8;
-}
-
-.commentBody a:not(.comment-link-card):visited {
-  color: #6a4bbd;
+  text-decoration-color: blue;
 }
 
 .commentBody ul,
@@ -419,6 +418,13 @@
 .commentEditor :global(.tiptap) p {
   margin: 0.5em 0;
   font-size: 0.95rem;
+}
+
+/* Comment form link color unified */
+.commentEditor :global(.tiptap) a {
+  color: blue;
+  text-decoration: underline;
+  text-decoration-color: blue;
 }
 
 /* コメント入力エディタ内の箇条書きはみ出し対策 */
