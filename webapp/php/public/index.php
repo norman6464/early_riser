@@ -11,6 +11,7 @@ use App\TemplateController;
 use App\OgpController;
 use App\CompanyController;
 use App\PressReleaseCategoryController;
+use App\ProofreadController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -50,6 +51,9 @@ $app->put('/api/companies/{id}', CompanyController::class . '::update');
 
 // カテゴリAPI
 $app->get('/api/press-release-categories', PressReleaseCategoryController::class . '::list');
+
+// 誤字修正API
+$app->post('/api/proofread', ProofreadController::class . '::handle');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
