@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send } from 'lucide-react';
 import { useChat, type ChatMessage } from '../../_hooks/useChat';
+import { markdownToHtml } from '../../_lib/markdownRenderer';
 import { PRESS_RELEASE_ID } from '../../_lib/constants';
 import styles from './ChatPanel.module.css';
 
@@ -86,10 +87,17 @@ export default function ChatPanel({ onClose }: ChatPanelProps) {
               className={`${styles.message} ${msg.role === 'user' ? styles.messageUser : styles.messageAssistant}`}
             >
               <div className={styles.messageBubble}>
-                {msg.content || (
+                {!msg.content ? (
                   <div className={styles.loadingDots}>
                     <span /><span /><span />
                   </div>
+                ) : msg.role === 'assistant' ? (
+                  <div
+                    className={styles.markdownContent}
+                    dangerouslySetInnerHTML={{ __html: markdownToHtml(msg.content) }}
+                  />
+                ) : (
+                  msg.content
                 )}
               </div>
               {msg.created_at && (
