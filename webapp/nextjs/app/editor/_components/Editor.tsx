@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import {
-  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles, MessageSquare,
+  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles, MessageSquare, Lightbulb,
 } from 'lucide-react';
 import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
@@ -13,6 +13,7 @@ import TemplateModal from './TemplateModal/TemplateModal';
 import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
 import ProofreadModal from './ProofreadModal/ProofreadModal';
 import ChatPanel from './ChatPanel/ChatPanel';
+import TitleSuggestionModal from './TitleSuggestionModal/TitleSuggestionModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -32,6 +33,7 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
   const [showProofread, setShowProofread] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showTitleSuggestion, setShowTitleSuggestion] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -175,6 +177,10 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
             <Settings size={15} />
             設定
           </Link>
+          <button onClick={() => setShowTitleSuggestion(true)} className={styles.headerButton}>
+            <Lightbulb size={15} />
+            タイトル提案
+          </button>
           <button onClick={() => setShowProofread(true)} className={styles.headerButton}>
             <SpellCheck size={15} />
             誤字修正
@@ -250,6 +256,18 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {showTitleSuggestion && editor && (
+        <TitleSuggestionModal
+          currentTitle={title}
+          bodyText={editor.getText()}
+          onApply={(newTitle) => {
+            setTitle(newTitle);
+            setShowTitleSuggestion(false);
+          }}
+          onClose={() => setShowTitleSuggestion(false)}
         />
       )}
 

@@ -21,6 +21,7 @@ use App\AiGenerateController;
 use App\SaveCommentController;
 use App\SavePressReleaseController;
 use App\TemplateController;
+use App\TitleSuggestionController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -65,6 +66,9 @@ $app->post('/api/proofread', ProofreadController::class . '::handle');
 
 // AI生成API
 $app->post('/api/ai/generate', AiGenerateController::class . '::handle');
+
+// ── AIタイトル提案 ──
+$app->post('/api/ai/suggest-titles', TitleSuggestionController::class . '::handle');
 
 // ── AIチャット ──
 $app->get('/api/chat/{id}/history', ChatController::class . '::history');
