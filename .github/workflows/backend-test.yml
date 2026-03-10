@@ -7,8 +7,8 @@ on:
       - opened
       - synchronize
       - reopened
-    paths:
-      - "webapp/php/**"
+    # paths:
+    #   - "webapp/php/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
