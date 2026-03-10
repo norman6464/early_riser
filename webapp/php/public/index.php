@@ -7,6 +7,7 @@ use App\SavePressReleaseController;
 use App\ImageUploadController;
 use App\TemplateController;
 use App\OgpController;
+use App\AiController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,6 +34,9 @@ $app->post('/api/templates', TemplateController::class . '::save');
 $app->delete('/api/templates/{id}', TemplateController::class . '::delete');
 
 $app->get('/api/ogp', OgpController::class . '::handle');
+
+$app->post('/api/ai/suggest-titles', AiController::class . '::suggestTitles');
+$app->post('/api/ai/proofread', AiController::class . '::proofread');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
