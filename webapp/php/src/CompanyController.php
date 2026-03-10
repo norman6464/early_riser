@@ -57,7 +57,8 @@ class CompanyController
                 $data['location'],
                 isset($data['employee_count']) ? (int)$data['employee_count'] : null,
                 $data['appeal'] ?? '',
-                $data['challenge'] ?? ''
+                $data['challenge'] ?? '',
+                is_array($data['businesses'] ?? null) ? $data['businesses'] : []
             );
             return self::json($response, $company, 201);
         } catch (ServiceException $e) {
@@ -95,7 +96,8 @@ class CompanyController
                 $data['location'],
                 isset($data['employee_count']) ? (int)$data['employee_count'] : null,
                 $data['appeal'] ?? '',
-                $data['challenge'] ?? ''
+                $data['challenge'] ?? '',
+                is_array($data['businesses'] ?? null) ? $data['businesses'] : []
             );
             return self::json($response, $company);
         } catch (ServiceException $e) {
