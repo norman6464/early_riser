@@ -1,0 +1,373 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  width: 640px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.headerIcon {
+  color: #059669;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.15s ease;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #9ca3af;
+  transition: all 0.15s ease;
+}
+
+.closeButton:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #059669;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  text-align: center;
+  padding: 1rem;
+  color: #ef4444;
+  font-size: 0.8125rem;
+  background-color: #fef2f2;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.description {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+/* セクション一覧 */
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sectionItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #fafafa;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.sectionItem:hover {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+
+.sectionNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: #059669;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sectionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sectionName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.sectionHint {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.sectionArrow {
+  color: #d1d5db;
+  flex-shrink: 0;
+}
+
+/* 質問入力 */
+.questionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.questionIntro {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.questionList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.questionItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.questionLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.questionNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  background: #ecfdf5;
+  color: #059669;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.questionInput {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.questionInput:focus {
+  border-color: #059669;
+}
+
+.questionInput::placeholder {
+  color: #9ca3af;
+}
+
+/* 生成結果 */
+.resultSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.resultLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resultContent {
+  padding: 1rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: #374151;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* アクションボタン */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.cancelButton {
+  padding: 0.4rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.generateButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: #059669;
+  color: white;
+  border: 1px solid #059669;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.generateButton:hover:not(:disabled) {
+  background: #047857;
+  border-color: #047857;
+}
+
+.generateButton:disabled {
+  background: #6ee7b7;
+  border-color: #6ee7b7;
+  cursor: not-allowed;
+}
+
+.buttonSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.insertButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: #2563eb;
+  color: white;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.insertButton:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
