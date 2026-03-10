@@ -2,9 +2,8 @@
 
 namespace App;
 
-use DateMalformedStringException;
-use DateTimeImmutable;
-use PDO;
+use App\Service\PressReleaseService;
+use App\Service\ServiceException;
 use PDOException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,201 +15,49 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class SavePressReleaseController
 {
-    /**
-     * プレスリリースを保存（更新）する
-     *
-     * @param ServerRequestInterface $request HTTPリクエスト
-     * @param ResponseInterface $response HTTPレスポンス
-     * @param array $args URLパラメータ（idを含む）
-     * @return ResponseInterface JSONレスポンスを返す
-     */
     public static function handle(
         ServerRequestInterface $request,
         ResponseInterface $response,
         array $args
-    ): ResponseInterface
-    {
-        $validated = self::validateRequest($request, $response, $args);
-        if ($validated instanceof ResponseInterface) {
-            return $validated;
-        }
-
-        $id = $validated['id'];
-        $title = $validated['title'];
-        $content = $validated['content'];
-
-        try {
-            // データベース接続を取得（必要なタイミングで実行）
-            $db = Database::getConnection();
-
-            // 対象のプレスリリースが存在するか確認
-            $stmt = $db->prepare('SELECT id FROM press_releases WHERE id = :id');
-            $stmt->execute(['id' => $id]);
-            $exists = $stmt->fetch();
-
-            // レコードが存在しない場合は404エラーを返す
-            if (!$exists) {
-                $payload = json_encode(['code' => 'NOT_FOUND', 'message' => 'Press release not found']);
-                $response->getBody()->write($payload);
-                return $response
-                    ->withHeader('Content-Type', 'application/json')
-                    ->withStatus(404);
-            }
-
-            // プレスリリースを更新
-            // updated_atは自動的に現在時刻に更新される
-            $stmt = $db->prepare('
-                UPDATE press_releases
-                SET title = :title, content = :content, updated_at = CURRENT_TIMESTAMP
-                WHERE id = :id
-            ');
-            $stmt->execute([
-                'id' => $id,
-                'title' => $title,
-                'content' => $content,
-            ]);
-
-            // 更新後のデータを取得
-            $stmt = $db->prepare('SELECT id, title, content, created_at, updated_at FROM press_releases WHERE id = :id');
-            $stmt->execute(['id' => $id]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            // contentは文字列のまま返す
-            $data = [
-                'id' => (int)$row['id'],
-                'title' => $row['title'],
-                'content' => $row['content'],
-                'created_at' => self::formatTimestamp((string)$row['created_at']),
-                'updated_at' => self::formatTimestamp((string)$row['updated_at']),
-            ];
-
-            // 更新されたPressReleaseオブジェクトを返す
-            $payload = json_encode($data);
-            $response->getBody()->write($payload);
-            return $response->withHeader('Content-Type', 'application/json');
-
-        } catch (PDOException $e) {
-            // データベースエラーが発生した場合は500エラーを返す
-            $payload = json_encode(['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error']);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(500);
-        } catch (DateMalformedStringException) {
-            $payload = json_encode(['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error']);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(500);
-        }
-    }
-
-    private static function validateRequest(
-        ServerRequestInterface $request,
-        ResponseInterface $response,
-        array $args
-    ): ResponseInterface|array
-    {
-        // URLパラメータからIDを取得して検証
+    ): ResponseInterface {
+        // IDパラメータの解析
         $idParam = (string)$args['id'];
         if (!ctype_digit($idParam) || (int)$idParam <= 0) {
-            $payload = json_encode(['code' => 'INVALID_ID', 'message' => 'Invalid ID']);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+            return self::json($response, ['code' => 'INVALID_ID', 'message' => 'Invalid ID'], 400);
         }
-        $id = (int)$idParam;
 
-        // リクエストボディからJSONデータを取得
+        // リクエストボディの解析
         $body = (string)$request->getBody();
         $data = json_decode($body, true);
 
-        // JSONのパースに失敗した場合は400エラーを返す
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $payload = json_encode(['code' => 'INVALID_JSON', 'message' => 'Invalid JSON']);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+            return self::json($response, ['code' => 'INVALID_JSON', 'message' => 'Invalid JSON'], 400);
         }
 
-        // JSONが配列以外でも、必須フィールド判定で扱えるようにする
         $data = is_array($data) ? $data : [];
 
-        // 必須フィールド（title, content）の存在と型を確認
         if (
             !array_key_exists('title', $data) ||
             !array_key_exists('content', $data) ||
             !is_string($data['title']) ||
             !is_string($data['content'])
         ) {
-            $payload = json_encode(['code' => 'MISSING_REQUIRED_FIELDS', 'message' => 'Title and content are required']);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+            return self::json($response, ['code' => 'MISSING_REQUIRED_FIELDS', 'message' => 'Title and content are required'], 400);
         }
 
-        $title = $data['title'];
-        $content = $data['content'];
-
-        // タイトルと本文の長さを検証（マルチバイト対応）
-        $titleLen = mb_strlen($title);
-        $contentLen = mb_strlen(self::extractText(json_decode($content, true)));
-        
-        if ($titleLen > 100 || $contentLen > 500) {
-            $errors = [];
-            if ($titleLen > 100) {
-                $errors[] = 'title must be at most 100 characters';
-            }
-            if ($contentLen > 500) {
-                $errors[] = 'content must be at most 500 characters';
-            }
-
-            $payload = json_encode(['code' => 'TOO_LONG', 'message' => implode('; ', $errors)]);
-            $response->getBody()->write($payload);
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+        try {
+            $result = PressReleaseService::update((int)$idParam, $data['title'], $data['content']);
+            return self::json($response, $result);
+        } catch (ServiceException $e) {
+            return self::json($response, ['code' => $e->getErrorCode(), 'message' => $e->getMessage()], $e->getStatusCode());
+        } catch (PDOException) {
+            return self::json($response, ['code' => 'INTERNAL_ERROR', 'message' => 'Internal server error'], 500);
         }
-
-        return [
-            'id' => $id,
-            'title' => $title,
-            'content' => $content,
-        ];
     }
 
-    /**
-     * TipTap JSONからテキストを再帰的に抽出する
-     */
-    private static function extractText(?array $node): string
+    private static function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
-        if ($node === null) {
-            return '';
-        }
-
-        $text = '';
-        if (isset($node['type']) && $node['type'] === 'text' && isset($node['text'])) {
-            $text .= $node['text'];
-        }
-        if (isset($node['content']) && is_array($node['content'])) {
-            foreach ($node['content'] as $child) {
-                if (is_array($child)) {
-                    $text .= self::extractText($child);
-                }
-            }
-        }
-        return $text;
-    }
-
-    /**
-     * @throws DateMalformedStringException
-     */
-    private static function formatTimestamp(string $timestamp): string
-    {
-        return new DateTimeImmutable($timestamp)
-            ->format('Y-m-d\TH:i:s.u');
+        $response->getBody()->write(json_encode($data));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 }
