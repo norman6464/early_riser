@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import DOMPurify from 'dompurify';
 import type { TemplateCandidate } from './types';
 import { useCompanyQuery } from '@/app/settings/_hooks/useCompanyInfo';
 import { useCategoriesQuery } from '../../_hooks/useCategories';
@@ -13,7 +14,7 @@ function renderContentPreview(content: TemplateCandidate['content']): string {
   try {
     const nodes = content?.content;
     if (!nodes) return '';
-    return nodes
+    const html = nodes
       .map((node: { type: string; attrs?: { level?: number }; content?: { text?: string }[] }) => {
         const text = node.content?.map((c) => c.text || '').join('') || '';
         if (node.type === 'heading') {
@@ -26,6 +27,7 @@ function renderContentPreview(content: TemplateCandidate['content']): string {
         return '';
       })
       .join('');
+    return DOMPurify.sanitize(html);
   } catch {
     return '';
   }
@@ -44,7 +46,7 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
   const isLoading = isLoadingCompany || isLoadingCategories;
 
   const hasCompanyInfo = useMemo(
-    () => !!(company?.name && company?.businesses?.length > 0),
+    () => !!(company?.name && (company?.businesses?.length ?? 0) > 0),
     [company],
   );
 
