@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import HtmlImportModal, { type HtmlImportData } from '../HtmlImportModal/HtmlImportModal';
+import Tooltip from '../Tooltip/Tooltip';
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
@@ -107,34 +108,46 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     <>
       <div className={styles.toolbar}>
         <div className={styles.toolbarGroup}>
-          <button onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass('bold')} title="太字">
-            <Bold size={iconSize} />
-          </button>
-          <button onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass('italic')} title="斜体">
-            <Italic size={iconSize} />
-          </button>
-          <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={btnClass('underline')} title="下線">
-            <Underline size={iconSize} />
-          </button>
+          <Tooltip label="太字">
+            <button onClick={() => editor.chain().focus().toggleBold().run()} className={btnClass('bold')}>
+              <Bold size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="斜体">
+            <button onClick={() => editor.chain().focus().toggleItalic().run()} className={btnClass('italic')}>
+              <Italic size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="下線">
+            <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={btnClass('underline')}>
+              <Underline size={iconSize} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className={styles.toolbarDivider} />
 
         <div className={styles.toolbarGroup}>
-          <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass('bulletList')} title="箇条書き">
-            <List size={iconSize} />
-          </button>
-          <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass('orderedList')} title="番号リスト">
-            <ListOrdered size={iconSize} />
-          </button>
+          <Tooltip label="箇条書き">
+            <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={btnClass('bulletList')}>
+              <List size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="番号付きリスト">
+            <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass('orderedList')}>
+              <ListOrdered size={iconSize} />
+            </button>
+          </Tooltip>
         </div>
 
         <div className={styles.toolbarDivider} />
 
         <div className={styles.toolbarGroup}>
-          <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton} title="画像アップロード">
-            <ImagePlus size={iconSize} />
-          </button>
+          <Tooltip label="画像アップロード">
+            <button onClick={() => fileInputRef.current?.click()} className={styles.toolbarButton}>
+              <ImagePlus size={iconSize} />
+            </button>
+          </Tooltip>
           <input
             ref={fileInputRef}
             type="file"
@@ -143,24 +156,32 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
             onChange={handleImageUpload}
             hidden
           />
-          <button onClick={addImage} className={styles.toolbarButton} title="画像URL挿入">
-            <ImageIcon size={iconSize} />
-          </button>
-          <button onClick={handleLink} className={btnClass('link')} title="リンク">
-            <Link2 size={iconSize} />
-          </button>
-          <button onClick={handleLinkCard} className={styles.toolbarButton} title="リンクカード">
-            <LayoutPanelLeft size={iconSize} />
-          </button>
+          <Tooltip label="画像URL挿入">
+            <button onClick={addImage} className={styles.toolbarButton}>
+              <ImageIcon size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="リンク">
+            <button onClick={handleLink} className={btnClass('link')}>
+              <Link2 size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="リンクカード">
+            <button onClick={handleLinkCard} className={styles.toolbarButton}>
+              <LayoutPanelLeft size={iconSize} />
+            </button>
+          </Tooltip>
         </div>
 
         {onHtmlImport && (
           <>
             <div className={styles.toolbarDivider} />
-            <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButtonWide} title="HTMLインポート">
-              <FileCode2 size={14} />
-              <span>HTML</span>
-            </button>
+            <Tooltip label="HTMLインポート">
+              <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButtonWide}>
+                <FileCode2 size={14} />
+                <span>HTML</span>
+              </button>
+            </Tooltip>
           </>
         )}
       </div>
