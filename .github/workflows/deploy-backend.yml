@@ -70,7 +70,8 @@ jobs:
             {"name": "DB_USERNAME", "value": "${{ secrets.DB_USERNAME }}"},
             {"name": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD }}"},
             {"name": "AWS_BUCKET_IMAGES", "value": "${{ vars.AWS_BUCKET_IMAGES }}"},
-            {"name": "AWS_BUCKET_IMAGES_URL", "value": "${{ vars.AWS_BUCKET_IMAGES_URL }}"}
+            {"name": "AWS_BUCKET_IMAGES_URL", "value": "${{ vars.AWS_BUCKET_IMAGES_URL }}"},
+            {"name": "OPENAI_API_KEY", "value": "${{ secrets.OPENAI_API_KEY }}"}
           ]' task-definition.json > task-definition-updated.json
           mv task-definition-updated.json task-definition.json
 
@@ -95,3 +96,4 @@ jobs:
           echo "### Backend Deployed :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ steps.build-image.outputs.image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**API:** http://${{ env.ALB_DNS }}" >> $GITHUB_STEP_SUMMARY
+          

@@ -59,6 +59,36 @@
   color: white;
 }
 
+.aiButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.aiButton:hover {
+  opacity: 0.9;
+}
+
+.previewButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: white;
+  color: #28a745;
+  border: 1px solid #28a745;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.previewButton:hover {
+  background-color: #28a745;
+  color: white;
+}
+
 .main {
   flex: 1;
   padding: 2rem;

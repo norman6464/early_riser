@@ -20,6 +20,8 @@ import LinkCard from './_components/LinkCard/linkCardExtension';
 import Toolbar from './_components/ToolBar/Toolbar';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './_components/TemplateModal/TemplateModal';
+import AiAssistant from './_components/AiAssistant/AiAssistant';
+import Preview from './_components/Preview/Preview';
 import type { HtmlImportData } from './_components/HtmlImportModal/HtmlImportModal';
 import type { PressRelease } from '@/lib/types';
 import styles from './page.module.css';
@@ -103,6 +105,8 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
   const titleCount = title.length;
   const [bodyCount, setBodyCount] = useState(0);
   const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const editor = useEditor({
     extensions: [
       Document,
@@ -318,6 +322,12 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
       <header className={styles.header}>
         <h1 className={styles.title}>プレスリリースエディター</h1>
         <div className={styles.headerButtons}>
+          <button onClick={() => setShowAiAssistant(true)} className={styles.aiButton}>
+            AIアシスタント
+          </button>
+          <button onClick={() => setShowPreview(true)} className={styles.previewButton}>
+            プレビュー
+          </button>
           <button onClick={() => setTemplateModal('load')} className={styles.templateButton}>
             テンプレートから作成
           </button>
@@ -355,6 +365,28 @@ function Editor({ initialTitle, initialContent }: EditorProps) {
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {showAiAssistant && (
+        <AiAssistant
+          currentTitle={title}
+          currentContent={editor ? editor.getText() : ''}
+          onApplyTitle={(newTitle) => setTitle(newTitle)}
+          onApplyContent={(newContent) => {
+            if (editor) {
+              editor.chain().focus().setContent(newContent).run();
+            }
+          }}
+          onClose={() => setShowAiAssistant(false)}
+        />
+      )}
+
+      {showPreview && (
+        <Preview
+          title={title}
+          contentJson={editor ? JSON.stringify(editor.getJSON()) : '{}'}
+          onClose={() => setShowPreview(false)}
         />
       )}
     </div>
