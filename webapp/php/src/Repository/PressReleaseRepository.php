@@ -18,7 +18,7 @@ class PressReleaseRepository
     public static function findById(int $id): ?array
     {
         $db = Database::getConnection();
-        $stmt = $db->prepare('SELECT id, title, content, created_at, updated_at FROM press_releases WHERE id = :id');
+        $stmt = $db->prepare('SELECT id, title, content, company_id, category_id, goal, created_at, updated_at FROM press_releases WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -42,19 +42,22 @@ class PressReleaseRepository
      *
      * @return array 更新後のレコード
      */
-    public static function update(int $id, string $title, string $content): array
+    public static function update(int $id, string $title, string $content, ?int $companyId = null, ?int $categoryId = null, string $goal = ''): array
     {
         $db = Database::getConnection();
 
         $stmt = $db->prepare('
             UPDATE press_releases
-            SET title = :title, content = :content, updated_at = CURRENT_TIMESTAMP
+            SET title = :title, content = :content, company_id = :company_id, category_id = :category_id, goal = :goal, updated_at = CURRENT_TIMESTAMP
             WHERE id = :id
         ');
         $stmt->execute([
             'id' => $id,
             'title' => $title,
             'content' => $content,
+            'company_id' => $companyId,
+            'category_id' => $categoryId,
+            'goal' => $goal,
         ]);
 
         return self::findById($id);

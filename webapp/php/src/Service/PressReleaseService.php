@@ -36,7 +36,7 @@ class PressReleaseService
      * @return array レスポンス用に整形済みのデータ
      * @throws ServiceException バリデーションエラーまたは見つからない場合
      */
-    public static function update(int $id, string $title, string $content): array
+    public static function update(int $id, string $title, string $content, ?int $companyId = null, ?int $categoryId = null, string $goal = ''): array
     {
         // バリデーション
         self::validate($title, $content);
@@ -47,7 +47,7 @@ class PressReleaseService
         }
 
         // 更新
-        $row = PressReleaseRepository::update($id, $title, $content);
+        $row = PressReleaseRepository::update($id, $title, $content, $companyId, $categoryId, $goal);
 
         return self::formatRow($row);
     }
@@ -107,6 +107,9 @@ class PressReleaseService
             'id' => (int)$row['id'],
             'title' => $row['title'],
             'content' => $row['content'],
+            'company_id' => $row['company_id'] !== null ? (int)$row['company_id'] : null,
+            'category_id' => $row['category_id'] !== null ? (int)$row['category_id'] : null,
+            'goal' => $row['goal'] ?? '',
             'created_at' => (new DateTimeImmutable($row['created_at']))->format('Y-m-d\TH:i:s.u'),
             'updated_at' => (new DateTimeImmutable($row['updated_at']))->format('Y-m-d\TH:i:s.u'),
         ];

@@ -46,7 +46,14 @@ class SavePressReleaseController
         }
 
         try {
-            $result = PressReleaseService::update((int)$idParam, $data['title'], $data['content']);
+            $result = PressReleaseService::update(
+                (int)$idParam,
+                $data['title'],
+                $data['content'],
+                isset($data['company_id']) ? (int)$data['company_id'] : null,
+                isset($data['category_id']) ? (int)$data['category_id'] : null,
+                $data['goal'] ?? ''
+            );
             return self::json($response, $result);
         } catch (ServiceException $e) {
             return self::json($response, ['code' => $e->getErrorCode(), 'message' => $e->getMessage()], $e->getStatusCode());
