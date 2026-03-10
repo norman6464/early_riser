@@ -6,6 +6,7 @@ import type { WizardStep, TemplateCandidate } from './types';
 import { useCompanyQuery } from '@/app/settings/_hooks/useCompanyInfo';
 import { useCategoriesQuery } from '../../_hooks/useCategories';
 import styles from './AiTemplateModal.module.css';
+import { API_URL } from '../../_lib/constants';
 
 interface AiTemplateModalProps {
   onApply: (title: string, content: string) => void;
@@ -38,7 +39,7 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
       .join('、');
 
     try {
-      const res = await fetch('/api/ai/generate', {
+      const res = await fetch(`${API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
