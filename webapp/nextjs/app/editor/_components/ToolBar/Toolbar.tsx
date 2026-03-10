@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   Undo2, Redo2,
@@ -25,6 +25,24 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showHtmlImport, setShowHtmlImport] = useState(false);
   const [showImageMenu, setShowImageMenu] = useState(false);
+  const [, forceRerender] = useReducer((x: number) => x + 1, 0);
+
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => forceRerender();
+    editor.on('selectionUpdate', rerender);
+    editor.on('transaction', rerender);
+    editor.on('update', rerender);
+    editor.on('focus', rerender);
+    editor.on('blur', rerender);
+    return () => {
+      editor.off('selectionUpdate', rerender);
+      editor.off('transaction', rerender);
+      editor.off('update', rerender);
+      editor.off('focus', rerender);
+      editor.off('blur', rerender);
+    };
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -106,8 +124,11 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     }
   };
 
-  const btnClass = (name: string, attrs?: Record<string, unknown>) =>
-    `${styles.toolbarButton} ${editor.isActive(name, attrs) ? styles.toolbarButtonActive : ''}`;
+  const btnClass = (name: string, attrs?: Record<string, unknown>) => {
+    const hasSelection = !editor.state.selection.empty;
+    const isActive = hasSelection && editor.isActive(name, attrs);
+    return `${styles.toolbarButton} ${isActive ? styles.toolbarButtonActive : ''}`;
+  };
 
   const iconSize = 16;
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import styles from './Toolbar.module.css';
@@ -13,6 +13,24 @@ interface ToolbarProps {
 export default function Toolbar({ editor }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showImageMenu, setShowImageMenu] = useState(false);
+  const [, forceRerender] = useReducer((x: number) => x + 1, 0);
+
+  useEffect(() => {
+    if (!editor) return;
+    const rerender = () => forceRerender();
+    editor.on('selectionUpdate', rerender);
+    editor.on('transaction', rerender);
+    editor.on('update', rerender);
+    editor.on('focus', rerender);
+    editor.on('blur', rerender);
+    return () => {
+      editor.off('selectionUpdate', rerender);
+      editor.off('transaction', rerender);
+      editor.off('update', rerender);
+      editor.off('focus', rerender);
+      editor.off('blur', rerender);
+    };
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -113,8 +131,11 @@ export default function Toolbar({ editor }: ToolbarProps) {
     }
   };
 
-  const buttonClass = (name: string) =>
-    `${styles.toolbarButton} ${editor.isActive(name) ? styles.toolbarButtonActive : ''}`;
+  const buttonClass = (name: string) => {
+    const hasSelection = !editor.state.selection.empty;
+    const isActive = hasSelection && editor.isActive(name);
+    return `${styles.toolbarButton} ${isActive ? styles.toolbarButtonActive : ''}`;
+  };
 
   return (
     <>
