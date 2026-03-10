@@ -7,6 +7,7 @@ ini_set('display_errors', '0');
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use App\ChatController;
 use App\CompanyController;
 use App\GetCommentController;
 use App\GetPressReleaseController;
@@ -64,6 +65,10 @@ $app->post('/api/proofread', ProofreadController::class . '::handle');
 
 // AI生成API
 $app->post('/api/ai/generate', AiGenerateController::class . '::handle');
+
+// ── AIチャット ──
+$app->get('/api/chat/{id}/history', ChatController::class . '::history');
+$app->post('/api/chat/{id}', ChatController::class . '::stream');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 // ── 404 Catch-all ──
