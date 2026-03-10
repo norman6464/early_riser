@@ -20,12 +20,18 @@ export const editorExtensions = [
   Document,
   Heading,
   Image.extend({
+    // ブロック要素として扱い、NodeViewWrapperがdivでレンダリングされるようにする
+    inline: false,
+    group: 'block',
     addAttributes() {
       return {
         ...this.parent?.(),
         width: {
           default: null,
-          parseHTML: (element) => element.getAttribute('width') || element.style.width || null,
+          parseHTML: (element) => {
+            const w = element.getAttribute('width') || element.style.width;
+            return w ? parseInt(String(w), 10) || null : null;
+          },
           renderHTML: (attributes) => {
             if (!attributes.width) return {};
             return { width: attributes.width };

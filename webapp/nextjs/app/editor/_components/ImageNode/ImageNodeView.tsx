@@ -6,11 +6,15 @@ import styles from './ImageNodeView.module.css';
 
 export default function ImageNodeView({ node, updateAttributes, deleteNode, selected, editor }: NodeViewProps) {
   const [isResizing, setIsResizing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
   const width = node.attrs.width as number | null;
+
+  // CSSの:hoverがTipTapのDOM構造で効かないため、JSで管理
+  const showControls = selected || isHovered || isResizing;
 
   const handleResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -47,6 +51,8 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
   return (
     <NodeViewWrapper
       className={`${styles.imageContainer} ${selected ? styles.imageSelected : ''} ${isResizing ? styles.imageResizing : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => { if (!isResizing) setIsHovered(false); }}
     >
       <img
         ref={imgRef}
@@ -58,7 +64,7 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
 
       {/* リサイズハンドル（右下） */}
       <div
-        className={styles.resizeHandle}
+        className={`${styles.resizeHandle} ${showControls ? styles.resizeHandleVisible : ''}`}
         onPointerDown={handleResizeStart}
         contentEditable={false}
       />
@@ -73,7 +79,7 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
       {/* 削除ボタン */}
       <button
         type="button"
-        className={styles.imageDeleteButton}
+        className={`${styles.imageDeleteButton} ${showControls ? styles.imageDeleteButtonVisible : ''}`}
         onClick={deleteNode}
         contentEditable={false}
         aria-label="画像を削除"
