@@ -29,27 +29,41 @@ class CompanyService
     }
 
     /**
-     * 会社を新規作成する
+     * 会社を新規作成する（事業内容含む）
      *
+     * @param array $businesses 事業内容の配列 [["description" => "..."], ...]
      * @return array 作成された会社データ
      * @throws ServiceException バリデーションエラー時
      */
-    public static function create(string $name, string $location, ?int $employeeCount, string $appeal, string $challenge): array
+    public static function create(string $name, string $location, ?int $employeeCount, string $appeal, string $challenge, array $businesses = []): array
     {
         self::validate($name, $location);
 
         $row = CompanyRepository::create($name, $location, $employeeCount, $appeal, $challenge);
+        $companyId = (int)$row['id'];
 
-        return self::formatRow($row, []);
+        // 事業内容を登録
+        foreach ($businesses as $business) {
+            if (is_string($business)) {
+                CompanyBusinessRepository::create($companyId, $business);
+            } elseif (is_array($business) && !empty($business['description'])) {
+                CompanyBusinessRepository::create($companyId, $business['description']);
+            }
+        }
+
+        $savedBusinesses = CompanyBusinessRepository::findByCompanyId($companyId);
+
+        return self::formatRow($row, $savedBusinesses);
     }
 
     /**
-     * 会社を更新する
+     * 会社を更新する（事業内容は洗い替え）
      *
+     * @param array $businesses 事業内容の配列 [["description" => "..."], ...]
      * @return array 更新された会社データ
      * @throws ServiceException バリデーションエラー、会社が見つからない場合
      */
-    public static function update(int $id, string $name, string $location, ?int $employeeCount, string $appeal, string $challenge): array
+    public static function update(int $id, string $name, string $location, ?int $employeeCount, string $appeal, string $challenge, array $businesses = []): array
     {
         self::validate($name, $location);
 
@@ -58,9 +72,19 @@ class CompanyService
             throw ServiceException::notFound('Company not found');
         }
 
-        $businesses = CompanyBusinessRepository::findByCompanyId($id);
+        // 事業内容を洗い替え（全削除→再登録）
+        CompanyBusinessRepository::deleteByCompanyId($id);
+        foreach ($businesses as $business) {
+            if (is_string($business)) {
+                CompanyBusinessRepository::create($id, $business);
+            } elseif (is_array($business) && !empty($business['description'])) {
+                CompanyBusinessRepository::create($id, $business['description']);
+            }
+        }
 
-        return self::formatRow($row, $businesses);
+        $savedBusinesses = CompanyBusinessRepository::findByCompanyId($id);
+
+        return self::formatRow($row, $savedBusinesses);
     }
 
     /**

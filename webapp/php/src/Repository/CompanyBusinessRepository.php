@@ -46,16 +46,12 @@ class CompanyBusinessRepository
     }
 
     /**
-     * 事業内容を削除する
-     *
-     * @return bool 削除できた場合true
+     * 会社IDに紐づく事業内容を全削除する
      */
-    public static function delete(int $id, int $companyId): bool
+    public static function deleteByCompanyId(int $companyId): void
     {
         $db = Database::getConnection();
-        $stmt = $db->prepare('DELETE FROM company_businesses WHERE id = :id AND company_id = :company_id');
-        $stmt->execute(['id' => $id, 'company_id' => $companyId]);
-
-        return $stmt->rowCount() > 0;
+        $stmt = $db->prepare('DELETE FROM company_businesses WHERE company_id = :company_id');
+        $stmt->execute(['company_id' => $companyId]);
     }
 }

@@ -3,3 +3,5 @@ CLAUDE.md
 webapp/php/vendor/
 webapp/php/.phpunit.result.cache
 webapp/php/composer.phar
+.env
+webapp/.env

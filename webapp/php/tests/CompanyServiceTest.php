@@ -19,7 +19,7 @@ class CompanyServiceTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('name is required');
 
-        CompanyService::create('', '東京都', null, '', '');
+        CompanyService::create('', '東京都', null, '', '', []);
     }
 
     /**
@@ -30,7 +30,7 @@ class CompanyServiceTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('location is required');
 
-        CompanyService::create('株式会社テスト', '', null, '', '');
+        CompanyService::create('株式会社テスト', '', null, '', '', []);
     }
 
     /**
@@ -41,7 +41,7 @@ class CompanyServiceTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('name is required');
 
-        CompanyService::update(1, '', '東京都', null, '', '');
+        CompanyService::update(1, '', '東京都', null, '', '', []);
     }
 
     /**
@@ -52,6 +52,6 @@ class CompanyServiceTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('location is required');
 
-        CompanyService::update(1, '株式会社テスト', '', null, '', '');
+        CompanyService::update(1, '株式会社テスト', '', null, '', '', []);
     }
 }

@@ -8,7 +8,6 @@ use App\ImageUploadController;
 use App\TemplateController;
 use App\OgpController;
 use App\CompanyController;
-use App\CompanyBusinessController;
 use App\PressReleaseCategoryController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
@@ -41,11 +40,6 @@ $app->get('/api/ogp', OgpController::class . '::handle');
 $app->post('/api/companies', CompanyController::class . '::create');
 $app->get('/api/companies/{id}', CompanyController::class . '::get');
 $app->put('/api/companies/{id}', CompanyController::class . '::update');
-
-// 事業内容API
-$app->get('/api/companies/{companyId}/businesses', CompanyBusinessController::class . '::list');
-$app->post('/api/companies/{companyId}/businesses', CompanyBusinessController::class . '::add');
-$app->delete('/api/companies/{companyId}/businesses/{id}', CompanyBusinessController::class . '::delete');
 
 // カテゴリAPI
 $app->get('/api/press-release-categories', PressReleaseCategoryController::class . '::list');
