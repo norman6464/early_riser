@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
+  Undo2, Redo2,
   Heading2, Heading3,
   Bold, Italic, Underline,
   List, ListOrdered, TextQuote,
@@ -108,6 +109,21 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
   return (
     <>
       <div className={styles.toolbar}>
+        <div className={styles.toolbarGroup}>
+          <Tooltip label="元に戻す">
+            <button onClick={() => editor.chain().focus().undo().run()} className={styles.toolbarButton} disabled={!editor.can().undo()}>
+              <Undo2 size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="やり直す">
+            <button onClick={() => editor.chain().focus().redo().run()} className={styles.toolbarButton} disabled={!editor.can().redo()}>
+              <Redo2 size={iconSize} />
+            </button>
+          </Tooltip>
+        </div>
+
+        <div className={styles.toolbarDivider} />
+
         <div className={styles.toolbarGroup}>
           <Tooltip label="見出し2">
             <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={btnClass('heading', { level: 2 })}>
