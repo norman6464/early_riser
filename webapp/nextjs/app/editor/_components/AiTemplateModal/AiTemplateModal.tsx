@@ -1,12 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import type { WizardStep, TemplateCandidate } from './types';
+import type { TemplateCandidate } from './types';
 import { useCompanyQuery } from '@/app/settings/_hooks/useCompanyInfo';
 import { useCategoriesQuery } from '../../_hooks/useCategories';
+import { useAiTemplateWizard } from '../../_hooks/useAiTemplateWizard';
 import styles from './AiTemplateModal.module.css';
-import { API_URL } from '../../_lib/constants';
+
+//レンダリングの度に再生成を防ぐためにスコープ外に移動
+function renderContentPreview(content: TemplateCandidate['content']): string {
+  try {
+    const nodes = content?.content;
+    if (!nodes) return '';
+    return nodes
+      .map((node: { type: string; attrs?: { level?: number }; content?: { text?: string }[] }) => {
+        const text = node.content?.map((c) => c.text || '').join('') || '';
+        if (node.type === 'heading') {
+          const level = node.attrs?.level || 2;
+          return `<h${level}>${text}</h${level}>`;
+        }
+        if (node.type === 'paragraph') {
+          return text ? `<p>${text}</p>` : '<br />';
+        }
+        return '';
+      })
+      .join('');
+  } catch {
+    return '';
+  }
+}
 
 interface AiTemplateModalProps {
   onApply: (title: string, content: string) => void;
@@ -14,90 +37,25 @@ interface AiTemplateModalProps {
 }
 
 export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalProps) {
-  const [step, setStep] = useState<WizardStep>('input');
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [purpose, setPurpose] = useState('');
-  const [candidates, setCandidates] = useState<TemplateCandidate[]>([]);
-  const [error, setError] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   const { data: company, isPending: isLoadingCompany } = useCompanyQuery();
   const { data: categories = [], isPending: isLoadingCategories } = useCategoriesQuery();
-
   const isLoading = isLoadingCompany || isLoadingCategories;
-  const hasCompanyInfo = company?.name && company?.businesses?.length > 0;
 
-  const selectedCategory = categories.find((c) => c.slug === selectedCategorySlug);
+  const hasCompanyInfo = useMemo(
+    () => !!(company?.name && company?.businesses?.length > 0),
+    [company],
+  );
 
-  const handleGenerate = async () => {
-    if (!selectedCategorySlug || !company) return;
-    setStep('generating');
-    setError('');
-
-    const businessDescription = (company.businesses || [])
-      .map((b) => b.description)
-      .filter(Boolean)
-      .join('、');
-
-    try {
-      const res = await fetch(`${API_URL}/api/ai/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName: company.name,
-          businessDescription,
-          employeeCount: company.employee_count,
-          challenge: company.challenge,
-          appeal: company.appeal,
-          categoryName: selectedCategory?.name || selectedCategorySlug,
-          purpose,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'テンプレートの生成に失敗しました');
-      }
-
-      const data = await res.json();
-      setCandidates(data.candidates || []);
-      setStep('candidates');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'テンプレートの生成に失敗しました');
-      setStep('input');
-    }
-  };
-
-  const handleApplyCandidate = (candidate: TemplateCandidate) => {
-    onApply(candidate.title, JSON.stringify(candidate.content));
-    onClose();
-  };
-
-  const handleBack = () => {
-    setStep('input');
-  };
-
-  const renderContentPreview = (content: TemplateCandidate['content']): string => {
-    try {
-      const nodes = content?.content;
-      if (!nodes) return '';
-      return nodes
-        .map((node) => {
-          const text =
-            node.content?.map((c) => c.text || '').join('') || '';
-          if (node.type === 'heading') {
-            const level = node.attrs?.level || 2;
-            return `<h${level}>${text}</h${level}>`;
-          }
-          if (node.type === 'paragraph') {
-            return text ? `<p>${text}</p>` : '<br />';
-          }
-          return '';
-        })
-        .join('');
-    } catch {
-      return '';
-    }
-  };
+  const selectedCategory = useMemo(
+    () => categories.find((c: { id: number }) => c.id === selectedCategoryId),
+    [categories, selectedCategoryId],
+  );
+  
+  // useAiTemplateWizardから必要な状態と関数を取得
+  const { step, candidates, error, purposeRef, handleGenerate, handleApplyCandidate, handleBack } =
+    useAiTemplateWizard({ company, selectedCategory, onApply, onClose });
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -139,9 +97,9 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
                 <div className={styles.companyInfoSummary}>
                   <p className={styles.companyInfoLabel}>企業情報</p>
                   <p className={styles.companyInfoValue}>
-                    {company.name} —{' '}
-                    {company.businesses
-                      .map((b) => b.description)
+                    {company?.name} —{' '}
+                    {company?.businesses
+                      .map((b: { description: string }) => b.description)
                       .filter(Boolean)
                       .join('、')}
                   </p>
@@ -162,11 +120,11 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
                         key={cat.id}
                         type="button"
                         className={
-                          selectedCategorySlug === cat.slug
+                          selectedCategoryId === cat.id
                             ? styles.categoryCardSelected
                             : styles.categoryCard
                         }
-                        onClick={() => setSelectedCategorySlug(cat.slug)}
+                        onClick={() => setSelectedCategoryId(cat.id)}
                       >
                         {cat.name}
                       </button>
@@ -177,8 +135,8 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
                 <div className={styles.formGroup}>
                   <label className={styles.label}>プレスリリースの目的</label>
                   <textarea
-                    value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
+                    defaultValue=""
+                    onChange={(e) => { purposeRef.current = e.target.value; }}
                     placeholder="例：新商品の認知拡大、採用応募数の増加"
                     className={styles.textarea}
                   />
@@ -191,7 +149,7 @@ export default function AiTemplateModal({ onApply, onClose }: AiTemplateModalPro
                   <button
                     onClick={handleGenerate}
                     className={styles.primaryButton}
-                    disabled={!selectedCategorySlug}
+                    disabled={!selectedCategoryId}
                   >
                     生成する
                   </button>

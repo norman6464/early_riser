@@ -11,9 +11,8 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
-import ImageNodeView from '../_components/ImageNodeView';
 import LinkCard from '../_components/LinkCard/linkCardExtension';
-
+import ImageNodeView from '../_components/ImageNode/ImageNodeView';
 export const editorExtensions = [
   Document,
   Heading,

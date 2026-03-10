@@ -9,7 +9,7 @@ import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
   editor: Editor | null;
-  onHtmlImport: (data: HtmlImportData) => void;
+  onHtmlImport?: (data: HtmlImportData) => void;
 }
 
 export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
@@ -115,10 +115,6 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
     }
   };
 
-  const handleHtmlImport = (data: HtmlImportData) => {
-    onHtmlImport(data);
-  };
-
   const buttonClass = (name: string) =>
     `${styles.toolbarButton} ${editor.isActive(name) ? styles.toolbarButtonActive : ''}`;
 
@@ -160,13 +156,15 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
         <button onClick={handleLinkCard} className={styles.toolbarButton}>
           リンクカード
         </button>
-        <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButton}>
-          HTMLインポート
-        </button>
+        {onHtmlImport && (
+          <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButton}>
+            HTMLインポート
+          </button>
+        )}
       </div>
-      {showHtmlImport && (
+      {onHtmlImport && showHtmlImport && (
         <HtmlImportModal
-          onImport={handleHtmlImport}
+          onImport={onHtmlImport}
           onClose={() => setShowHtmlImport(false)}
         />
       )}

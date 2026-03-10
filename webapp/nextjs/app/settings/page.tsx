@@ -1,14 +1,15 @@
 'use client';
-
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import Link from 'next/link';
 import {
   useCompanyQuery,
   useCreateCompanyMutation,
   useUpdateCompanyMutation,
 } from './_hooks/useCompanyInfo';
-import type { CompanyInput } from '@/lib/types';
+import {zodResolver} from '@hookform/resolvers/zod';
+import { companySchema } from './_schemas/companyInfoSchema';
+import type { CompanyFormValues } from './_schemas/companyInfoSchema';
 import styles from './page.module.css';
 
 export default function SettingsPage() {
@@ -17,7 +18,6 @@ export default function SettingsPage() {
   const updateMutation = useUpdateCompanyMutation();
 
   const [showSaved, setShowSaved] = useState(false);
-  const [businesses, setBusinesses] = useState<string[]>([]);
   const [newBusiness, setNewBusiness] = useState('');
 
   const isNew = !company;
@@ -27,8 +27,10 @@ export default function SettingsPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isDirty },
-  } = useForm<CompanyInput>({
+  } = useForm<CompanyFormValues>({
+    resolver: zodResolver(companySchema),
     defaultValues: {
       companyName: '',
       location: '',
@@ -38,24 +40,24 @@ export default function SettingsPage() {
       businesses: [],
     },
   });
+  //要素が可変のフォームに使うフック
+  const { fields, append, remove } = useFieldArray({ control, name: 'businesses' });
 
   useEffect(() => {
     if (company) {
-      const biz = company.businesses.map((b) => b.description);
-      setBusinesses(biz);
       reset({
         companyName: company.name || '',
         location: company.location || '',
         employeeCount: company.employee_count ?? 0,
         challenge: company.challenge || '',
         appeal: company.appeal || '',
-        businesses: biz,
+        businesses: company.businesses.map((b) => ({ value: b.description })),
       });
     }
   }, [company, reset]);
 
-  const onSubmit = (data: CompanyInput) => {
-    saveMutation.mutate({ ...data, businesses }, {
+  const onSubmit = (data: CompanyFormValues) => {
+    saveMutation.mutate({ ...data, businesses: data.businesses.map((b) => b.value) }, {
       onSuccess: () => {
         setShowSaved(true);
         setTimeout(() => setShowSaved(false), 3000);
@@ -66,19 +68,15 @@ export default function SettingsPage() {
   const handleAddBusiness = () => {
     const value = newBusiness.trim();
     if (!value) return;
-    setBusinesses((prev) => [...prev, value]);
+    //要素追加の関数
+    append({ value });
     setNewBusiness('');
   };
 
   const handleDeleteBusiness = (index: number) => {
-    setBusinesses((prev) => prev.filter((_, i) => i !== index));
+    //要素削除の関数
+    remove(index);
   };
-
-  // businesses の変更もフォームの dirty 判定に反映
-  const businessesChanged = company
-    ? JSON.stringify(businesses) !== JSON.stringify(company.businesses.map((b) => b.description))
-    : businesses.length > 0;
-  const isFormDirty = isDirty || businessesChanged;
 
   if (isLoading) {
     return (
@@ -158,7 +156,7 @@ export default function SettingsPage() {
             <button
               type="submit"
               className={styles.saveButton}
-              disabled={saveMutation.isPending || !isFormDirty}
+              disabled={saveMutation.isPending || !isDirty}
             >
               {saveMutation.isPending ? '保存中...' : '保存'}
             </button>
@@ -170,11 +168,11 @@ export default function SettingsPage() {
       <div className={styles.section} style={{ marginTop: '1.5rem' }}>
         <h2 className={styles.sectionTitle}>事業内容</h2>
 
-        {businesses.length > 0 ? (
+        {fields.length > 0 ? (
           <ul className={styles.businessList}>
-            {businesses.map((desc, index) => (
-              <li key={index} className={styles.businessItem}>
-                <span className={styles.businessValue}>{desc}</span>
+            {fields.map((field, index) => (
+              <li key={field.id} className={styles.businessItem}>
+                <span className={styles.businessValue}>{field.value}</span>
                 <button
                   type="button"
                   className={styles.removeButton}
