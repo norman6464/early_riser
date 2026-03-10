@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Toolbar from './ToolBar/Toolbar';
+import CommentSection from './CommentSection';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
@@ -12,7 +13,7 @@ import { useBodyCount } from '../_hooks/useBodyCount';
 import { useSavePressReleaseMutation } from '../_hooks/useSavePressRelease';
 import { countWithoutLineBreaks } from '../_lib/validation';
 import { editorExtensions } from '../_lib/editorExtensions';
-import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH } from '../_lib/constants';
+import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH, PRESS_RELEASE_ID } from '../_lib/constants';
 
 interface EditorProps {
   initialTitle: string;
@@ -168,6 +169,8 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           <EditorContent editor={editor} />
           <div className={styles.charCount}>本文: {bodyCount}文字</div>
         </div>
+        
+        <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
       </main>
 
       {templateModal && (
