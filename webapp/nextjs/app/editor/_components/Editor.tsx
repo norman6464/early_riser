@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import {
-  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper,
+  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
+import CommentSection from './CommentSection';
 import { getPresignedUrl, uploadToS3 } from '@/lib/imageUpload';
 import TemplateModal from './TemplateModal/TemplateModal';
+import AiTemplateModal from './AiTemplateModal/AiTemplateModal';
 import ProofreadModal from './ProofreadModal/ProofreadModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
@@ -16,7 +19,7 @@ import { useBodyCount } from '../_hooks/useBodyCount';
 import { useSavePressReleaseMutation } from '../_hooks/useSavePressRelease';
 import { countWithoutLineBreaks } from '../_lib/validation';
 import { editorExtensions } from '../_lib/editorExtensions';
-import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH } from '../_lib/constants';
+import { TITLE_MAX_LENGTH, BODY_MAX_LENGTH, PRESS_RELEASE_ID } from '../_lib/constants';
 
 interface EditorProps {
   initialTitle: string;
@@ -25,7 +28,7 @@ interface EditorProps {
 
 export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
-  const [templateModal, setTemplateModal] = useState<'save' | 'load' | null>(null);
+  const [templateModal, setTemplateModal] = useState<'save' | 'load' | 'ai-generate' | null>(null);
   const [showProofread, setShowProofread] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
@@ -166,9 +169,17 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           Press Release Editor
         </h1>
         <div className={styles.headerButtons}>
+          <Link href="/settings" className={styles.headerButton}>
+            <Settings size={15} />
+            設定
+          </Link>
           <button onClick={() => setShowProofread(true)} className={styles.headerButton}>
             <SpellCheck size={15} />
             誤字修正
+          </button>
+          <button onClick={() => setTemplateModal('ai-generate')} className={styles.headerButton}>
+            <Sparkles size={15} />
+            AIテンプレート
           </button>
           <div className={styles.divider} />
           <button onClick={() => setTemplateModal('load')} className={styles.headerButton}>
@@ -207,6 +218,8 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
             {bodyCount} / {BODY_MAX_LENGTH}
           </div>
         </div>
+
+        <CommentSection pressReleaseId={PRESS_RELEASE_ID} />
       </main>
 
       {showProofread && editor && (
@@ -218,12 +231,19 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
         />
       )}
 
-      {templateModal && (
+      {(templateModal === 'save' || templateModal === 'load') && (
         <TemplateModal
           mode={templateModal}
           currentTitle={title}
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
+          onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {templateModal === 'ai-generate' && (
+        <AiTemplateModal
+          onApply={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
         />
       )}

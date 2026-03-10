@@ -15,7 +15,7 @@ import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
   editor: Editor | null;
-  onHtmlImport: (data: HtmlImportData) => void;
+  onHtmlImport?: (data: HtmlImportData) => void;
 }
 
 export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
@@ -154,14 +154,17 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
           </button>
         </div>
 
-        <div className={styles.toolbarDivider} />
-
-        <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButtonWide} title="HTMLインポート">
-          <FileCode2 size={14} />
-          <span>HTML</span>
-        </button>
+        {onHtmlImport && (
+          <>
+            <div className={styles.toolbarDivider} />
+            <button onClick={() => setShowHtmlImport(true)} className={styles.toolbarButtonWide} title="HTMLインポート">
+              <FileCode2 size={14} />
+              <span>HTML</span>
+            </button>
+          </>
+        )}
       </div>
-      {showHtmlImport && (
+      {onHtmlImport && showHtmlImport && (
         <HtmlImportModal
           onImport={onHtmlImport}
           onClose={() => setShowHtmlImport(false)}
