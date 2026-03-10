@@ -35,14 +35,10 @@ $app->get('/', function (ServerRequestInterface $request, ResponseInterface $res
 // ── プレスリリース ──
 $app->get('/api/press-releases/{id}', GetPressReleaseController::class . '::handle');
 $app->post('/api/press-releases/{id}', SavePressReleaseController::class . '::handle');
-$app->get('/press-releases/{id}', GetPressReleaseController::class . '::handle');
-$app->post('/press-releases/{id}', SavePressReleaseController::class . '::handle');
 
 // ── コメント ──
 $app->get('/api/comments/{id}', GetCommentController::class . '::handle');
 $app->post('/api/comments/{id}', SaveCommentController::class . '::handle');
-$app->get('/comments/{id}', GetCommentController::class . '::handle');
-$app->post('/comments/{id}', SaveCommentController::class . '::handle');
 
 // ── 画像 ──
 $app->post('/api/images/presigned-url', ImageUploadController::class . '::handle');
