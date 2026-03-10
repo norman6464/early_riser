@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { API_URL, PRESS_RELEASE_ID } from '../_lib/constants';
+import { API_URL } from '../_lib/constants';
 
 export interface Comment {
   id: number;
@@ -14,7 +14,7 @@ export function useComments(pressReleaseId?: number) {
     queryKey: ['comments', pressReleaseId],
     queryFn: async () => {
       if (!pressReleaseId) return [];
-      const response = await fetch(`${API_URL}/api/comments/${PRESS_RELEASE_ID}`);
+      const response = await fetch(`${API_URL}/api/comments/${pressReleaseId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch comments');
       }

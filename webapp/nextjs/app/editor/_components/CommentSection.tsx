@@ -63,9 +63,7 @@ export default function CommentSection({ pressReleaseId }: CommentSectionProps) 
       const contentJson = JSON.stringify(editor.getJSON());
 
       if (pressReleaseId) {
-        await saveComment.mutateAsync({
-          body: contentJson,
-        });
+        await saveComment.mutateAsync({ body: contentJson });
       } else {
         const newComment: CommentData = {
           id: Date.now(),
@@ -76,6 +74,9 @@ export default function CommentSection({ pressReleaseId }: CommentSectionProps) 
       }
 
       editor.chain().focus().clearContent().run();
+    } catch (error) {
+      console.error('コメントの保存に失敗しました:', error);
+      alert('コメントの保存に失敗しました。時間をおいて再試行してください。');
     } finally {
       setIsSaving(false);
     }

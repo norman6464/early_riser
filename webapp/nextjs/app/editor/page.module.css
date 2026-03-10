@@ -217,7 +217,6 @@
   /* 箇条書きの行頭が枠に食い込まないように余白 + 折返し */
   padding-left: 0.75rem;
   overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 /* Inline links (exclude link-card anchors) */
