@@ -5,7 +5,7 @@ import type { Editor } from '@tiptap/react';
 import {
   Heading2, Heading3,
   Bold, Italic, Underline,
-  List, ListOrdered,
+  List, ListOrdered, TextQuote,
   ImagePlus, ImageIcon,
   Link2, LayoutPanelLeft,
   FileCode2,
@@ -152,6 +152,11 @@ export default function Toolbar({ editor, onHtmlImport }: ToolbarProps) {
           <Tooltip label="番号付きリスト">
             <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={btnClass('orderedList')}>
               <ListOrdered size={iconSize} />
+            </button>
+          </Tooltip>
+          <Tooltip label="引用">
+            <button onClick={() => editor.chain().focus().toggleBlockquote().run()} className={btnClass('blockquote')}>
+              <TextQuote size={iconSize} />
             </button>
           </Tooltip>
         </div>
