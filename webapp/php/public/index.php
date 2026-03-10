@@ -7,6 +7,9 @@ use App\SavePressReleaseController;
 use App\ImageUploadController;
 use App\TemplateController;
 use App\OgpController;
+use App\CompanyController;
+use App\CompanyBusinessController;
+use App\PressReleaseCategoryController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,6 +36,19 @@ $app->post('/api/templates', TemplateController::class . '::save');
 $app->delete('/api/templates/{id}', TemplateController::class . '::delete');
 
 $app->get('/api/ogp', OgpController::class . '::handle');
+
+// 会社API
+$app->post('/api/companies', CompanyController::class . '::create');
+$app->get('/api/companies/{id}', CompanyController::class . '::get');
+$app->put('/api/companies/{id}', CompanyController::class . '::update');
+
+// 事業内容API
+$app->get('/api/companies/{companyId}/businesses', CompanyBusinessController::class . '::list');
+$app->post('/api/companies/{companyId}/businesses', CompanyBusinessController::class . '::add');
+$app->delete('/api/companies/{companyId}/businesses/{id}', CompanyBusinessController::class . '::delete');
+
+// カテゴリAPI
+$app->get('/api/press-release-categories', PressReleaseCategoryController::class . '::list');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
