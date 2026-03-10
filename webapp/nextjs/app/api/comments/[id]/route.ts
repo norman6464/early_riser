@@ -7,9 +7,10 @@ type ErrorResponse = { code: string; message: string };
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const pressReleaseId = parseInt(params.id, 10);
+  const { id } = await params;
+  const pressReleaseId = parseInt(id, 10);
 
   if (!Number.isInteger(pressReleaseId) || pressReleaseId <= 0) {
     return NextResponse.json(
