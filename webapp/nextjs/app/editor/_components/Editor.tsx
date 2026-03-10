@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import {
-  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles, MessageSquare, Lightbulb, BarChart3,
+  SpellCheck, FolderOpen, BookmarkPlus, Save, Newspaper, Settings, Sparkles, MessageSquare, Lightbulb, BarChart3, FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import Toolbar from './ToolBar/Toolbar';
@@ -15,6 +15,7 @@ import ProofreadModal from './ProofreadModal/ProofreadModal';
 import ChatPanel from './ChatPanel/ChatPanel';
 import TitleSuggestionModal from './TitleSuggestionModal/TitleSuggestionModal';
 import ToneAnalysisModal from './ToneAnalysisModal/ToneAnalysisModal';
+import SectionGuideModal from './SectionGuideModal/SectionGuideModal';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -36,6 +37,7 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
   const [showChat, setShowChat] = useState(false);
   const [showTitleSuggestion, setShowTitleSuggestion] = useState(false);
   const [showToneAnalysis, setShowToneAnalysis] = useState(false);
+  const [showSectionGuide, setShowSectionGuide] = useState(false);
   const editor = useEditor({
     extensions: editorExtensions,
     content: initialContent,
@@ -191,6 +193,10 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
             <SpellCheck size={15} />
             誤字修正
           </button>
+          <button onClick={() => setShowSectionGuide(true)} className={styles.headerButton}>
+            <FileText size={15} />
+            構成ガイド
+          </button>
           <button onClick={() => setTemplateModal('ai-generate')} className={styles.headerButton}>
             <Sparkles size={15} />
             AIテンプレート
@@ -262,6 +268,22 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
           currentContent={editor ? JSON.stringify(editor.getJSON()) : ''}
           onLoad={handleTemplateLoad}
           onClose={() => setTemplateModal(null)}
+        />
+      )}
+
+      {showSectionGuide && editor && (
+        <SectionGuideModal
+          currentTitle={title}
+          onInsert={(text) => {
+            const paragraphs = text.split('\n').filter(line => line.trim() !== '');
+            const nodes = paragraphs.map(p => ({
+              type: 'paragraph',
+              content: [{ type: 'text', text: p }],
+            }));
+            editor.chain().focus().insertContentAt(editor.state.doc.content.size - 1, nodes).run();
+            setShowSectionGuide(false);
+          }}
+          onClose={() => setShowSectionGuide(false)}
         />
       )}
 
