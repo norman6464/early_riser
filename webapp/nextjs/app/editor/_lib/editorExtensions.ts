@@ -37,6 +37,17 @@ export const editorExtensions = [
             return { width: attributes.width };
           },
         },
+        height: {
+          default: null,
+          parseHTML: (element) => {
+            const h = element.getAttribute('height') || element.style.height;
+            return h ? parseInt(String(h), 10) || null : null;
+          },
+          renderHTML: (attributes) => {
+            if (!attributes.height) return {};
+            return { height: attributes.height };
+          },
+        },
       };
     },
     addNodeView() {

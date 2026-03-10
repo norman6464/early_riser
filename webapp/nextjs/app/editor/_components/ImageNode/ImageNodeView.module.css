@@ -8,7 +8,6 @@
 
 .imageContainer img {
   max-width: 100%;
-  height: auto;
   border-radius: 4px;
   display: block;
   cursor: default;
@@ -30,22 +29,13 @@
   outline-offset: 2px;
 }
 
-/* リサイズハンドル（右下） */
+/* --- リサイズハンドル共通 --- */
 .resizeHandle {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 16px;
-  height: 16px;
-  background: #2563eb;
-  border: 2px solid white;
-  border-radius: 2px;
-  cursor: nwse-resize;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease;
   z-index: 10;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* JSで制御する表示状態 */
@@ -54,15 +44,93 @@
   pointer-events: auto;
 }
 
-.resizeHandle:hover {
+/* 角ハンドル（四隅） */
+.resizeHandleCorner {
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+  border: 2px solid white;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.resizeHandleCorner:hover {
   background: #1d4ed8;
   transform: scale(1.3);
 }
 
-/* 幅表示インジケーター */
-.widthIndicator {
+/* 辺ハンドル（上下左右） */
+.resizeHandleEdge {
+  background: #2563eb;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.resizeHandleEdge:hover {
+  background: #1d4ed8;
+}
+
+/* --- 各方向の位置 --- */
+
+/* 四隅 */
+.handleNW {
+  top: -2px;
+  left: -2px;
+}
+
+.handleNE {
+  top: -2px;
+  right: -2px;
+}
+
+.handleSE {
+  bottom: -2px;
+  right: -2px;
+}
+
+.handleSW {
+  bottom: -2px;
+  left: -2px;
+}
+
+/* 上下の辺（横長バー） */
+.handleN {
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 6px;
+}
+
+.handleS {
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 6px;
+}
+
+/* 左右の辺（縦長バー） */
+.handleE {
+  right: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 32px;
+}
+
+.handleW {
+  left: -3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 32px;
+}
+
+/* サイズ表示インジケーター */
+.sizeIndicator {
   position: absolute;
-  bottom: -24px;
+  bottom: -28px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.75);
