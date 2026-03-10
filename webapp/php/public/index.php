@@ -5,6 +5,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\GetPressReleaseController;
 use App\SavePressReleaseController;
 use App\SaveCommentController;
+use App\GetCommentController;
 use App\ImageUploadController;
 use App\TemplateController;
 use App\OgpController;
@@ -27,7 +28,9 @@ $app->post('/api/press-releases/{id}', SavePressReleaseController::class . '::ha
 $app->get('/press-releases/{id}', GetPressReleaseController::class . '::handle');
 $app->post('/press-releases/{id}', SavePressReleaseController::class . '::handle');
 
+$app->get('/api/comments/{id}', GetCommentController::class . '::handle');
 $app->post('/api/comments/{id}', SaveCommentController::class . '::handle');
+$app->get('/comments/{id}', GetCommentController::class . '::handle');
 $app->post('/comments/{id}', SaveCommentController::class . '::handle');
 
 $app->post('/api/images/presigned-url', ImageUploadController::class . '::handle');

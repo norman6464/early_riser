@@ -28,6 +28,15 @@ class CommentService
         ];
     }
 
+    public static function getByPressReleaseId(int $pressReleaseId): array
+    {
+        if (!PressReleaseRepository::exists($pressReleaseId)) {
+            throw ServiceException::notFound('Press release not found');
+        }
+
+        return CommentRepository::findByPressReleaseId($pressReleaseId);
+    }
+
     private static function validate(string $body): void
     {
         if (mb_strlen($body) === 0) {
