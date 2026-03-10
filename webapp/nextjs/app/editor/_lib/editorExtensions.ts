@@ -9,6 +9,7 @@ import Underline from '@tiptap/extension-underline';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
+import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import LinkCard from '../_components/LinkCard/linkCardExtension';
@@ -32,6 +33,7 @@ export const editorExtensions = [
   BulletList,
   OrderedList,
   ListItem,
+  Blockquote,
   Bold,
   Italic,
   LinkCard,
