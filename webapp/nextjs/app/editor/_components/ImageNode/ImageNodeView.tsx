@@ -4,50 +4,52 @@ import { useState, useRef, useCallback } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 import styles from './ImageNodeView.module.css';
 
-export default function ImageNodeView({ node, updateAttributes, deleteNode, selected }: NodeViewProps) {
+export default function ImageNodeView({ node, updateAttributes, deleteNode, selected, editor }: NodeViewProps) {
   const [isResizing, setIsResizing] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
   const width = node.attrs.width as number | null;
 
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const container = containerRef.current;
-    if (!container) return;
-
-    const img = container.querySelector('img');
+    const img = imgRef.current;
     if (!img) return;
+
+    // エディタのフォーカスを奪わないようにする
+    editor.view.dom.style.pointerEvents = 'none';
 
     startXRef.current = e.clientX;
     startWidthRef.current = img.getBoundingClientRect().width;
     setIsResizing(true);
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      moveEvent.preventDefault();
       const diff = moveEvent.clientX - startXRef.current;
       const newWidth = Math.max(100, Math.round(startWidthRef.current + diff));
       updateAttributes({ width: newWidth });
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       setIsResizing(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      editor.view.dom.style.pointerEvents = '';
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [updateAttributes]);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+  }, [updateAttributes, editor]);
 
   return (
     <NodeViewWrapper
       className={`${styles.imageContainer} ${selected ? styles.imageSelected : ''} ${isResizing ? styles.imageResizing : ''}`}
-      ref={containerRef}
     >
       <img
+        ref={imgRef}
         src={node.attrs.src}
         alt={node.attrs.alt || ''}
         style={width ? { width: `${width}px` } : undefined}
@@ -57,7 +59,7 @@ export default function ImageNodeView({ node, updateAttributes, deleteNode, sele
       {/* リサイズハンドル（右下） */}
       <div
         className={styles.resizeHandle}
-        onMouseDown={handleResizeStart}
+        onPointerDown={handleResizeStart}
         contentEditable={false}
       />
 
