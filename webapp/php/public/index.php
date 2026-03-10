@@ -17,6 +17,7 @@ use App\OgpController;
 use App\CompanyController;
 use App\PressReleaseCategoryController;
 use App\ProofreadController;
+use App\AiGenerateController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -59,6 +60,9 @@ $app->get('/api/press-release-categories', PressReleaseCategoryController::class
 
 // 誤字修正API
 $app->post('/api/proofread', ProofreadController::class . '::handle');
+
+// AI生成API
+$app->post('/api/ai/generate', AiGenerateController::class . '::handle');
 
 // Catch-all for undefined routes (return 404 instead of 405)
 $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function (ServerRequestInterface $request, ResponseInterface $response) {
