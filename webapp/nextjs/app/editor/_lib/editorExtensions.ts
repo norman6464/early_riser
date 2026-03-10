@@ -20,6 +20,19 @@ export const editorExtensions = [
   Document,
   Heading,
   Image.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        width: {
+          default: null,
+          parseHTML: (element) => element.getAttribute('width') || element.style.width || null,
+          renderHTML: (attributes) => {
+            if (!attributes.width) return {};
+            return { width: attributes.width };
+          },
+        },
+      };
+    },
     addNodeView() {
       return ReactNodeViewRenderer(ImageNodeView);
     },
