@@ -147,7 +147,7 @@ PROMPT;
                 'Content-Type: application/json',
                 'Authorization: Bearer ' . $apiKey,
             ],
-            CURLOPT_TIMEOUT => 120,
+            CURLOPT_TIMEOUT => 300,
         ]);
 
         $result = curl_exec($ch);
