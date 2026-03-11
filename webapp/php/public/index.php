@@ -24,6 +24,7 @@ use App\TemplateController;
 use App\TitleSuggestionController;
 use App\ToneAnalysisController;
 use App\SectionGuideController;
+use App\PublishController;
 use Slim\Factory\AppFactory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -78,6 +79,9 @@ $app->post('/api/ai/analyze-tone', ToneAnalysisController::class . '::handle');
 // ── AIセクションガイド ──
 $app->get('/api/ai/sections', SectionGuideController::class . '::sections');
 $app->post('/api/ai/generate-section', SectionGuideController::class . '::generate');
+
+// ── プレスリリース公開 ──
+$app->post('/api/press-releases/{id}/publish', PublishController::class . '::handle');
 
 // ── AIチャット ──
 $app->get('/api/chat/{id}/history', ChatController::class . '::history');

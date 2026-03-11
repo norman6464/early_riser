@@ -8,6 +8,7 @@
 |------|-----|
 | フロントエンド (S3) | http://early-riser-frontend-726725835302.s3-website-ap-northeast-1.amazonaws.com |
 | バックエンド API (ALB) | http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com |
+| 公開プレスリリース (CloudFront) | https://d3ouxk9k9sbb2.cloudfront.net |
 
 ## API エンドポイント
 
@@ -19,7 +20,16 @@
 | GET | `/api/templates` | テンプレート一覧取得 |
 | POST | `/api/templates` | テンプレート保存 |
 | DELETE | `/api/templates/{id}` | テンプレート削除 |
-| GET | `/api/ogp?url=...` | OGP情報取得 (Next.js API Route) |
+| GET | `/api/ogp?url=...` | OGP情報取得 |
+| POST | `/api/press-releases/{id}/publish` | プレスリリース公開URL生成 |
+| POST | `/api/ai/suggest-titles` | AIタイトル提案 |
+| POST | `/api/ai/analyze-tone` | AIトーン分析 |
+| GET | `/api/ai/sections` | セクションガイド定義取得 |
+| POST | `/api/ai/generate-section` | AIセクション文章生成 |
+| POST | `/api/proofread` | AI誤字修正 |
+| POST | `/api/ai/generate` | AIテンプレート生成 |
+| GET | `/api/chat/{id}/history` | AIチャット履歴取得 |
+| POST | `/api/chat/{id}` | AIチャット (SSE) |
 | GET | `/` | ヘルスチェック |
 
 ### フロントエンドからの fetch 例
@@ -87,6 +97,15 @@ graph TB
         subgraph Storage["ストレージ"]
             RDS["RDS PostgreSQL 16<br/>press_releases / templates"]
             S3_IMG["S3<br/>画像バケット"]
+            S3_PUB["S3<br/>公開プレスリリース"]
+        end
+
+        subgraph CDN["CDN"]
+            CF["CloudFront<br/>OAC"]
+        end
+
+        subgraph Serverless["サーバーレス"]
+            Lambda["Lambda<br/>画像最適化 (Python)"]
         end
 
         subgraph CI["CI/CD"]
@@ -102,9 +121,14 @@ graph TB
     Browser -->|"HTML/JS/CSS取得"| S3_FE
     Browser -->|"API リクエスト"| ALB
     Browser -->|"画像を直接PUT<br/>(プリサインURL)"| S3_IMG
+    Browser -->|"公開ページ閲覧<br/>(HTTPS)"| CF
     ALB --> PHP
     PHP -->|"CRUD"| RDS
     PHP -->|"プリサインURL生成"| S3_IMG
+    PHP -->|"公開HTML生成"| S3_PUB
+    CF -->|"OAC"| S3_PUB
+    S3_IMG -->|"S3イベント"| Lambda
+    Lambda -->|"WebP変換<br/>リサイズ"| S3_IMG
     Repo -->|"push / merge"| Actions
     Actions -->|"php/** 変更時<br/>Docker イメージ push"| ECR
     Actions -->|"nextjs/** 変更時<br/>静的ファイル sync"| S3_FE
@@ -160,7 +184,7 @@ sequenceDiagram
 | フロントエンド | Next.js 16 (Static Export) / React / TipTap Editor |
 | バックエンド | PHP 8.5 / Slim Framework 4 |
 | データベース | PostgreSQL 16 (RDS) |
-| インフラ | AWS (ECS Fargate, ALB, S3, RDS, ECR) |
+| インフラ | AWS (ECS Fargate, ALB, S3, RDS, ECR, Lambda, CloudFront) |
 | CI/CD | GitHub Actions (OIDC認証) |
 
 ## CI/CD

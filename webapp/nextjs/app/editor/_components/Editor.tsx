@@ -16,6 +16,7 @@ import ChatPanel from './ChatPanel/ChatPanel';
 import TitleSuggestionModal from './TitleSuggestionModal/TitleSuggestionModal';
 import ToneAnalysisModal from './ToneAnalysisModal/ToneAnalysisModal';
 import SectionGuideModal from './SectionGuideModal/SectionGuideModal';
+import PublishButton from './PublishButton/PublishButton';
 import type { HtmlImportData } from './HtmlImportModal/HtmlImportModal';
 import styles from '../page.module.css';
 import { useAutoSave } from '../_hooks/useAutoSave';
@@ -219,6 +220,7 @@ export default function Editor({ initialTitle, initialContent }: EditorProps) {
             <Save size={15} />
             {isPending ? '保存中...' : '保存'}
           </button>
+          <PublishButton onSaveFirst={handleSave} />
         </div>
       </header>
 
