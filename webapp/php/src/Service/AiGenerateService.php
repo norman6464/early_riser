@@ -115,7 +115,7 @@ PROMPT;
     private static function callOpenAI(string $apiKey, string $systemPrompt, string $userPrompt): string
     {
         $payload = json_encode([
-            'model' => 'gpt-4o-mini',
+            'model' => 'gpt-5.4',
             'messages' => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user', 'content' => $userPrompt],
