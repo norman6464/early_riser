@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import type { WizardStep, TemplateCandidate } from '../_components/AiTemplateModal/types';
 import type { Company, PressReleaseCategory } from '@/lib/types';
+import { API_URL } from '../_lib/constants';
 
 interface UseAiTemplateWizardOptions {
   company: Company | null | undefined;
@@ -29,9 +30,9 @@ export function useAiTemplateWizard({
       .map((b) => b.description)
       .filter(Boolean)
       .join('、');
-
+    // AIに渡すためのデータを整形
     try {
-      const res = await fetch('/api/ai/generate', {
+      const res = await fetch(`${API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
