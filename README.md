@@ -6,9 +6,8 @@
 
 | 環境 | URL |
 |------|-----|
-| フロントエンド (S3) | http://early-riser-frontend-726725835302.s3-website-ap-northeast-1.amazonaws.com |
+| フロントエンド + API (CloudFront) | https://d3ouxk9k9sbb2.cloudfront.net |
 | バックエンド API (ALB) | http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com |
-| 公開プレスリリース (CloudFront) | https://d3ouxk9k9sbb2.cloudfront.net |
 
 ## API エンドポイント
 
@@ -16,18 +15,24 @@
 |----------|------|------|
 | GET | `/api/press-releases/{id}` | プレスリリース取得 |
 | POST | `/api/press-releases/{id}` | プレスリリース保存 |
+| POST | `/api/press-releases/{id}/publish` | プレスリリース公開URL生成 |
+| GET | `/api/comments/{id}` | コメント取得 |
+| POST | `/api/comments/{id}` | コメント保存 |
 | POST | `/api/images/presigned-url` | 画像アップロード用プリサインURL取得 |
 | GET | `/api/templates` | テンプレート一覧取得 |
 | POST | `/api/templates` | テンプレート保存 |
 | DELETE | `/api/templates/{id}` | テンプレート削除 |
 | GET | `/api/ogp?url=...` | OGP情報取得 |
-| POST | `/api/press-releases/{id}/publish` | プレスリリース公開URL生成 |
+| POST | `/api/companies` | 会社情報作成 |
+| GET | `/api/companies/{id}` | 会社情報取得 |
+| PUT | `/api/companies/{id}` | 会社情報更新 |
+| GET | `/api/press-release-categories` | カテゴリ一覧取得 |
+| POST | `/api/proofread` | AI誤字修正 |
+| POST | `/api/ai/generate` | AIテンプレート生成 |
 | POST | `/api/ai/suggest-titles` | AIタイトル提案 |
 | POST | `/api/ai/analyze-tone` | AIトーン分析 |
 | GET | `/api/ai/sections` | セクションガイド定義取得 |
 | POST | `/api/ai/generate-section` | AIセクション文章生成 |
-| POST | `/api/proofread` | AI誤字修正 |
-| POST | `/api/ai/generate` | AIテンプレート生成 |
 | GET | `/api/chat/{id}/history` | AIチャット履歴取得 |
 | POST | `/api/chat/{id}` | AIチャット (SSE) |
 | GET | `/` | ヘルスチェック |
@@ -36,11 +41,11 @@
 
 ```typescript
 // プレスリリース取得
-const res = await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/api/press-releases/1");
+const res = await fetch("https://d3ouxk9k9sbb2.cloudfront.net/api/press-releases/1");
 const data = await res.json();
 
 // プレスリリース保存
-await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/api/press-releases/1", {
+await fetch("https://d3ouxk9k9sbb2.cloudfront.net/api/press-releases/1", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ title: "タイトル", content: "コンテンツJSON" }),
@@ -51,7 +56,7 @@ await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/a
 
 ```typescript
 // 1. プリサインURLを取得
-const res = await fetch("http://early-riser-alb-771564224.ap-northeast-1.elb.amazonaws.com/api/images/presigned-url", {
+const res = await fetch("https://d3ouxk9k9sbb2.cloudfront.net/api/images/presigned-url", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ contentType: "image/png", fileName: "photo.png" }),
@@ -83,8 +88,12 @@ graph TB
     end
 
     subgraph AWS["AWS (ap-northeast-1)"]
+        subgraph CDN["CDN / エントリポイント"]
+            CF["CloudFront<br/>OAC + URL Rewrite<br/>CF Function"]
+        end
+
         subgraph Frontend["フロントエンド"]
-            S3_FE["S3 Static Hosting<br/>Next.js 静的ファイル"]
+            S3_FE["S3<br/>Next.js 静的ファイル"]
         end
 
         subgraph Backend["バックエンド"]
@@ -98,10 +107,6 @@ graph TB
             RDS["RDS PostgreSQL 16<br/>press_releases / templates"]
             S3_IMG["S3<br/>画像バケット"]
             S3_PUB["S3<br/>公開プレスリリース"]
-        end
-
-        subgraph CDN["CDN"]
-            CF["CloudFront<br/>OAC"]
         end
 
         subgraph Serverless["サーバーレス"]
@@ -118,15 +123,15 @@ graph TB
         Actions["GitHub Actions<br/>OIDC認証"]
     end
 
-    Browser -->|"HTML/JS/CSS取得"| S3_FE
-    Browser -->|"API リクエスト"| ALB
+    Browser -->|"HTTPS"| CF
+    CF -->|"OAC<br/>(静的ファイル)"| S3_FE
+    CF -->|"/api/*<br/>プロキシ"| ALB
+    CF -->|"OAC<br/>(公開ページ)"| S3_PUB
     Browser -->|"画像を直接PUT<br/>(プリサインURL)"| S3_IMG
-    Browser -->|"公開ページ閲覧<br/>(HTTPS)"| CF
     ALB --> PHP
     PHP -->|"CRUD"| RDS
     PHP -->|"プリサインURL生成"| S3_IMG
     PHP -->|"公開HTML生成"| S3_PUB
-    CF -->|"OAC"| S3_PUB
     S3_IMG -->|"S3イベント"| Lambda
     Lambda -->|"WebP変換<br/>リサイズ"| S3_IMG
     Repo -->|"push / merge"| Actions
@@ -140,6 +145,7 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant B as ブラウザ
+    participant CF as CloudFront
     participant S3F as S3 (フロントエンド)
     participant ALB as ALB
     participant API as PHP API (ECS)
@@ -147,43 +153,45 @@ sequenceDiagram
     participant S3I as S3 (画像)
 
     Note over B,S3F: ページ読み込み
-    B->>S3F: GET (HTML/JS/CSS)
-    S3F-->>B: 静的ファイル
+    B->>CF: HTTPS GET /editor
+    CF->>CF: CF Function (URL Rewrite)
+    CF->>S3F: OAC GET /editor.html
+    S3F-->>CF: 静的ファイル
+    CF-->>B: HTML/JS/CSS
 
     Note over B,DB: プレスリリース取得・保存
-    B->>ALB: GET /api/press-releases/1
+    B->>CF: GET /api/press-releases/1
+    CF->>ALB: /api/* プロキシ
     ALB->>API: リクエスト転送
     API->>DB: SELECT
     DB-->>API: データ
     API-->>B: JSON レスポンス
 
-    B->>ALB: POST /api/press-releases/1
+    B->>CF: POST /api/press-releases/1
+    CF->>ALB: /api/* プロキシ
     ALB->>API: リクエスト転送
     API->>DB: UPDATE
     API-->>B: 保存完了
 
     Note over B,S3I: 画像アップロード
-    B->>ALB: POST /api/images/presigned-url
+    B->>CF: POST /api/images/presigned-url
+    CF->>ALB: /api/* プロキシ
     ALB->>API: リクエスト転送
     API->>S3I: プリサインURL生成
     S3I-->>API: 署名付きURL
     API-->>B: {uploadUrl, imageUrl}
     B->>S3I: PUT (画像バイナリ直接アップロード)
-
-    Note over B,DB: テンプレート操作
-    B->>ALB: GET /api/templates
-    ALB->>API: リクエスト転送
-    API->>DB: SELECT
-    API-->>B: テンプレート一覧
 ```
 
 ## 技術スタック
 
 | レイヤー | 技術 |
 |----------|------|
-| フロントエンド | Next.js 16 (Static Export) / React / TipTap Editor |
+| フロントエンド | Next.js 16 (Static Export) / React / TipTap Editor / TanStack Query |
 | バックエンド | PHP 8.5 / Slim Framework 4 |
 | データベース | PostgreSQL 16 (RDS) |
+| CDN | CloudFront (OAC + CF Function URL Rewrite) |
+| 画像最適化 | Lambda (Python / Pillow) |
 | インフラ | AWS (ECS Fargate, ALB, S3, RDS, ECR, Lambda, CloudFront) |
 | CI/CD | GitHub Actions (OIDC認証) |
 
@@ -194,7 +202,7 @@ PRを main にマージすると自動デプロイが実行されます。
 | ワークフロー | トリガー | デプロイ先 |
 |-------------|----------|-----------|
 | `deploy-backend.yml` | `webapp/php/**` の変更 | ECR → ECS Fargate |
-| `deploy-frontend.yml` | `webapp/nextjs/**` の変更 | S3 Static Hosting |
+| `deploy-frontend.yml` | `webapp/nextjs/**` の変更 | S3 → CloudFront |
 
 ## ローカル開発
 
@@ -213,9 +221,10 @@ npm run dev
 ## 環境変数
 
 フロントエンド（ビルド時）:
-- `NEXT_PUBLIC_API_URL` - バックエンド API の URL
+- `NEXT_PUBLIC_API_URL` - バックエンド API の URL（CloudFront URL）
 
 バックエンド（ECS タスク定義 / GitHub Secrets & Variables）:
 - `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD`
 - `APP_ENV` / `APP_KEY`
 - `AWS_BUCKET_IMAGES` / `AWS_BUCKET_IMAGES_URL`
+- `OPENAI_API_KEY`
