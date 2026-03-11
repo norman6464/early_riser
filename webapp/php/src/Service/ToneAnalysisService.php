@@ -126,7 +126,7 @@ PROMPT;
     private static function callOpenAI(string $apiKey, string $prompt): string
     {
         $payload = json_encode([
-            'model' => 'gpt-4o-mini',
+            'model' => 'gpt-5.4',
             'messages' => [
                 ['role' => 'system', 'content' => 'あなたはプレスリリースの文章品質分析の専門家です。指定されたJSON形式のみで回答してください。'],
                 ['role' => 'user', 'content' => $prompt],
